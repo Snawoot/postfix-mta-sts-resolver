@@ -68,7 +68,8 @@ class STSResolver(object):
         try:
             async with aiohttp.ClientSession(loop=self._loop,
                                              timeout=self._http_timeout,
-                                             connector=aiohttp.TCPConnector(resolver=aiohttp.AsyncResolver())
+                                             connector=aiohttp.TCPConnector(loop=self._loop,
+                                                                            resolver=aiohttp.AsyncResolver(loop=self._loop))
                                              ) as session:
                 async with session.get(sts_policy_url, allow_redirects=False) as resp:
                     if resp.status != 200:
@@ -110,4 +111,5 @@ class STSResolver(object):
             return (STSResult.FETCH_ERROR, None)
 
         # Policy is valid. Returning result.
-        return ((STSResult.ENFORCE if pol['mode'] == 'enforce' else STSResult.TESTING), pol)
+        return (STSResult.ENFORCE if pol['mode'] == 'enforce' else STSResult.TESTING,
+                pol)
