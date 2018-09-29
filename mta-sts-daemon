@@ -2,8 +2,8 @@
 
 import sys
 import argparse
-from clitoolboilerplate.utils import *
-from clitoolboilerplate.enums import *
+from postfix_mta_sts_resolver.utils import *
+from postfix_mta_sts_resolver.enums import *
 
 
 def parse_args():
