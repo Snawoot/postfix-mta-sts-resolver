@@ -9,6 +9,7 @@ install: $(VENV) setup.py
 
 $(VENV):
 	$(PYTHON) -m venv $(VENV)
+	$(VENV)/bin/pip install -U wheel
 
 uninstall: $(VENV)
 	$(VENV)/bin/pip uninstall -y postfix_mta_sts_resolver

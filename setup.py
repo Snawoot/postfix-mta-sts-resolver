@@ -8,14 +8,14 @@ setup(name='postfix_mta_sts_resolver',
       author_email='vladislav-ex-src@vm-0.com',
       license='MIT',
       packages=['postfix_mta_sts_resolver'],
-      python_requires='>=3.5',
+      python_requires='>=3.5.3',
       setup_requires=[
           'wheel',
       ],
       install_requires=[
           'pynetstring>=0.1.dev2',
           'aiodns>=1.1.1',
-          'aiohttp>=1.2.0',
+          'aiohttp>=3.4.4',
           'PyYAML>=3.12',
       ],
       scripts=[
