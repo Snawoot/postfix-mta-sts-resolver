@@ -5,7 +5,8 @@ import argparse
 import postfix_mta_sts_resolver.utils as utils
 from postfix_mta_sts_resolver.enums import *
 import postfix_mta_sts_resolver.defaults as defaults
-import netstring
+import pynetstring
+import yaml
 
 
 def parse_args():
@@ -28,6 +29,9 @@ def main():
     args = parse_args()
     mainLogger = utils.setup_logger('MAIN', args.verbosity)
     mainLogger.info("MTA-STS daemon starting...")
+
+    with open(args.config, 'rb') as cfg_file:
+        cfg = yaml.safe_load(cfg_file)
 
 
 if __name__ == '__main__':

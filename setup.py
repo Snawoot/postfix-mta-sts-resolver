@@ -16,6 +16,7 @@ setup(name='postfix_mta_sts_resolver',
           'pynetstring>=0.1.dev2',
           'aiohttp',
           'aiodns',
+          'PyYAML',
       ],
       scripts=[
           'mta-sts-daemon',

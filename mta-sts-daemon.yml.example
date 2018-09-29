@@ -1,0 +1,10 @@
+host: 127.0.0.1
+port: 8461
+timeout: 4
+default_zone:
+  strict_testing: false
+  timeout: 4
+zones:
+  myzone:
+    strict_testing: false
+    timeout: 4
