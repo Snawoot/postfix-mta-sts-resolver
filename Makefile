@@ -11,7 +11,7 @@ $(VENV):
 	$(PYTHON) -m venv $(VENV)
 
 uninstall: $(VENV)
-	$(VENV)/bin/pip uninstall -y clitoolboilerplate
+	$(VENV)/bin/pip uninstall -y postfix_mta_sts_resolver
 
 clean:
 	$(RM) -rf $(VENV)
