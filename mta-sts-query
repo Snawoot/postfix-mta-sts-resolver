@@ -21,7 +21,7 @@ def parse_args():
 def main():
     args = parse_args()
     mainLogger = setup_logger('MAIN', args.verbosity)
-    mainLogger.info("Hello World!")
+    raise NotImplementedError("This utility is not implemented yet. Work in progress.")
 
 
 if __name__ == '__main__':

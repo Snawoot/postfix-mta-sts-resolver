@@ -2,8 +2,10 @@
 
 import sys
 import argparse
-from postfix_mta_sts_resolver.utils import *
+import postfix_mta_sts_resolver.utils as utils
 from postfix_mta_sts_resolver.enums import *
+import postfix_mta_sts_resolver.defaults as defaults
+import netstring
 
 
 def parse_args():
@@ -14,14 +16,18 @@ def parse_args():
                         type=LogLevel.__getitem__,
                         choices=list(LogLevel),
                         default=LogLevel.warn)
+    parser.add_argument("-c", "--config",
+                        help="config file location",
+                        metavar="FILE",
+                        default=defaults.CONFIG_LOCATION)
 
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
-    mainLogger = setup_logger('MAIN', args.verbosity)
-    mainLogger.info("Hello World!")
+    mainLogger = utils.setup_logger('MAIN', args.verbosity)
+    mainLogger.info("MTA-STS daemon starting...")
 
 
 if __name__ == '__main__':
