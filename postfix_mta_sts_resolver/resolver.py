@@ -66,7 +66,10 @@ class STSResolver(object):
 
         # Fetch actual policy
         try:
-            async with aiohttp.ClientSession(loop=self._loop, timeout = self._http_timeout) as session:
+            async with aiohttp.ClientSession(loop=self._loop,
+                                             timeout=self._http_timeout,
+                                             connector=aiohttp.TCPConnector(resolver=aiohttp.AsyncResolver())
+                                             ) as session:
                 async with session.get(sts_policy_url, allow_redirects=False) as resp:
                     if resp.status != 200:
                         raise BadSTSPolicy()
