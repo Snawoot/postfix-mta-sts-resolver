@@ -66,7 +66,7 @@ class STSResolver(object):
 
         # Fetch actual policy
         try:
-            async with aiohttp.ClientSession(timeout = self._http_timeout) as session:
+            async with aiohttp.ClientSession(loop=self._loop, timeout = self._http_timeout) as session:
                 async with session.get(sts_policy_url, allow_redirects=False) as resp:
                     if resp.status != 200:
                         raise BadSTSPolicy()
@@ -87,6 +87,7 @@ class STSResolver(object):
 
         try:
             max_age = int(pol.get('max_age', '-1'))
+            pol['max_age'] = max_age
         except:
             return (STSResult.FETCH_ERROR, None)
 
