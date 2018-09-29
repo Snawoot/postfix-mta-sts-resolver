@@ -1,0 +1,28 @@
+#!/usr/bin/env python3
+
+import sys
+import argparse
+from clitoolboilerplate.utils import *
+from clitoolboilerplate.enums import *
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("-v", "--verbosity",
+                        help="logging verbosity",
+                        type=LogLevel.__getitem__,
+                        choices=list(LogLevel),
+                        default=LogLevel.warn)
+
+    return parser.parse_args()
+
+
+def main():
+    args = parse_args()
+    mainLogger = setup_logger('MAIN', args.verbosity)
+    mainLogger.info("Hello World!")
+
+
+if __name__ == '__main__':
+    main()
