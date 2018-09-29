@@ -2,8 +2,9 @@
 
 import sys
 import argparse
-from postfix_mta_sts_resolver.utils import *
-from postfix_mta_sts_resolver.enums import *
+import postfix_mta_sts_resolver.utils as utils
+from postfix_mta_sts_resolver.resolver import STSResolver
+import asyncio
 
 
 def parse_args():
@@ -11,17 +12,23 @@ def parse_args():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("-v", "--verbosity",
                         help="logging verbosity",
-                        type=LogLevel.__getitem__,
-                        choices=list(LogLevel),
-                        default=LogLevel.warn)
+                        type=utils.LogLevel.__getitem__,
+                        choices=list(utils.LogLevel),
+                        default=utils.LogLevel.warn)
+    parser.add_argument("domain",
+                        help="domain to fetch MTA-STS policy from")
 
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
-    mainLogger = setup_logger('MAIN', args.verbosity)
-    raise NotImplementedError("This utility is not implemented yet. Work in progress.")
+    mainLogger = utils.setup_logger('MAIN', args.verbosity)
+
+    loop = asyncio.get_event_loop()
+    R = STSResolver(loop=loop)
+    result = loop.run_until_complete(R.resolve(args.domain))
+    print(result)
 
 
 if __name__ == '__main__':
