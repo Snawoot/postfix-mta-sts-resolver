@@ -43,7 +43,7 @@ See "Building virtualenv"
 Run `make` in project directory in order to build virtualenv. As result of it, new directory `venv` shall appear. `venv` contains interpreter and all required dependencies, i.e. encloses package with depencencies in separate environment. It is possible to specify alternative path where virtualenv directory shall be placed. Specify VENV variable for `make` command. Example:
 
 ```bash
-make VENV=~/myapp-venv
+make VENV=~/postfix-mta-sts-resolver
 ```
 
 Such virtual environment can be moved to another machine of similar type (as far python interpreter is compatible with new environment). If virtualenv is placed into same location on new machine, application can be runned this way:
