@@ -33,27 +33,23 @@ def populate_cfg_defaults(cfg):
     if not cfg:
         cfg = {}
 
-    if 'host' not in cfg:
-        cfg['host'] = defaults.HOST
-
-    if 'port' not in cfg:
-        cfg['port'] = defaults.PORT
+    cfg['host'] = cfg.get('host', defaults.HOST)
+    cfg['port'] = cfg.get('port', defaults.PORT)
 
     if 'cache' not in cfg:
-        cfg['cache'] = {
-            'type': defaults.CACHE_BACKEND,
-            'options': {
-                'cache_size': defaults.INTERNAL_CACHE_SIZE
-            }
-        }
+        cfg['cache'] = {}
+
+    cfg['cache']['type'] = cfg['cache'].get('type', defaults.CACHE_BACKEND)
+
+    if cfg['cache']['type'] == 'internal':
+        if 'options' not in cfg['cache']:
+            cfg['cache']['options'] = {}
+
+        cfg['cache']['options']['cache_size'] = cfg['cache']['options'].get('cache_size', defaults.INTERNAL_CACHE_SIZE)
 
     def populate_zone(zone):
-        if 'timeout' not in zone:
-            zone['timeout'] = defaults.TIMEOUT
-        
-        if 'strict_testing' not in zone:
-            zone['strict_testing'] = defaults.STRICT_TESTING
-
+        zone['timeout'] = zone.get('timeout', defaults.TIMEOUT)
+        zone['strict_testing'] = zone.get('strict_testing', defaults.STRICT_TESTING)
         return zone
 
     if 'default_zone' not in cfg:
