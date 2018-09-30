@@ -17,7 +17,6 @@ class LogLevel(enum.IntEnum):
         return e in self.__members__
 
 
-
 def setup_logger(name, verbosity):
     logger = logging.getLogger(name)
     logger.setLevel(verbosity)
