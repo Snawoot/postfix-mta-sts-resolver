@@ -1,5 +1,4 @@
 import collections
-import time
 
 class InternalLRUCache(object):
     def __init__(self, capacity=10000):
