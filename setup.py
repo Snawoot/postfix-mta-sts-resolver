@@ -18,6 +18,7 @@ setup(name='postfix_mta_sts_resolver',
           'aiohttp>=3.4.4',
           'PyYAML>=3.12',
           'uvloop>=0.11.0',
+          'pycares>=2.3.0',
       ],
       scripts=[
           'mta-sts-daemon',

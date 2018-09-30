@@ -48,12 +48,12 @@ class STSResolver(object):
                 return STSFetchResult.NONE, None
 
         # Exactly one record should exist
-        txt_records = [rec for rec in txt_records if rec.text.startswith('v=STSv1')]
+        txt_records = [rec for rec in txt_records if rec.text.startswith(b'v=STSv1')]
         if len(txt_records) != 1:
             return STSFetchResult.NONE, None
 
         # Validate record
-        txt_record = txt_records[0].text
+        txt_record = txt_records[0].text.decode('latin-1')
         mta_sts_record = parse_mta_sts_record(txt_record)
         if mta_sts_record.get('v', None) != 'STSv1' or 'id' not in mta_sts_record:
             return STSFetchResult.NONE, None
