@@ -42,8 +42,10 @@ class STSResolver(object):
                 return STSFetchResult.FETCH_ERROR, None
             elif e.args[0] == aiodns.error.ARES_ENOTFOUND:
                 return STSFetchResult.NONE, None
+            elif e.args[0] == aiodns.error.ARES_ENODATA:
+                return STSFetchResult.NONE, None
             else:
-                raise e
+                return STSFetchResult.NONE, None
 
         # Exactly one record should exist
         txt_records = [rec for rec in txt_records if rec.text.startswith('v=STSv1')]
