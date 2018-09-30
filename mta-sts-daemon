@@ -103,7 +103,9 @@ class STSSocketmapResponder(object):
         try:
             while True:
                 fut = await queue.get()
+                logger.debug("Got new future from queue")
                 data = await fut
+                logger.debug("Future await complete: data=%s", repr(data))
                 writer.write(data)
                 logger.debug("Wrote: %s", repr(data))
                 await writer.drain()
@@ -139,11 +141,11 @@ class STSSocketmapResponder(object):
         ts = time.time()
         if status is STSFetchResult.NOT_CHANGED:
             cached = CacheEntry(ts, cached.pol_id, cached.pol_body)
-            self._cache.put(domain, cached)
+            self._cache.set(domain, cached)
         elif status is STSFetchResult.VALID:
             pol_id, pol_body = policy
             cached = CacheEntry(ts, pol_id, pol_body)
-            self._cache.put(domain, cached)
+            self._cache.set(domain, cached)
         else:
             if cached is None:
                 res = False
@@ -166,6 +168,7 @@ class STSSocketmapResponder(object):
 
     def enqueue_request(self, queue, raw_req):
         fut = asyncio.ensure_future(self.process_request(raw_req), loop=self._loop)
+        queue.put_nowait(fut)
 
     async def handle_msg(self, reader, writer):
         logger = logging.getLogger("STS")
@@ -204,6 +207,7 @@ class STSSocketmapResponder(object):
                 self._decoder = pynetstring.Decoder()
             else:
                 for req in requests:
+                    logger.debug("Enq request: %s", repr(req))
                     self.enqueue_request(queue, req)
 
 
