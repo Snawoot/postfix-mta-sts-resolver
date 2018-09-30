@@ -2,6 +2,7 @@
 
 import sys
 import argparse
+import asyncio
 import postfix_mta_sts_resolver.utils as utils
 import postfix_mta_sts_resolver.defaults as defaults
 import pynetstring
@@ -20,17 +21,75 @@ def parse_args():
                         help="config file location",
                         metavar="FILE",
                         default=defaults.CONFIG_LOCATION)
+    parser.add_argument("--disable-uvloop",
+                        help="do not use uvloop even if it is available",
+                        action="store_true")
+
 
     return parser.parse_args()
 
 
+def populate_cfg_defaults(cfg):
+    if not cfg:
+        cfg = {}
+
+    if 'host' not in cfg:
+        cfg['host'] = defaults.HOST
+
+    if 'port' not in cfg:
+        cfg['port'] = defaults.PORT
+
+    if 'cache' not in cfg:
+        cfg['cache'] = {
+            'type': defaults.CACHE_BACKEND,
+            'options': {
+                'cache_size': defaults.INTERNAL_CACHE_SIZE
+            }
+        }
+
+    def populate_zone(zone):
+        if 'timeout' not in zone:
+            zone['timeout'] = defaults.TIMEOUT
+        
+        if 'strict_testing' not in zone:
+            zone['strict_testing'] = defaults.STRICT_TESTING
+
+        return zone
+
+    if 'default_zone' not in cfg:
+        cfg['default_zone'] = {}
+
+    populate_zone(cfg['default_zone'])
+
+    if 'zones' not in cfg:
+        cfg['zones'] = {}
+
+    for zone in cfg['zones'].values():
+        populate_zone(zone)
+
+    return cfg
+
+
 def main():
+    # Parse command line arguments and setup basic logging
     args = parse_args()
     mainLogger = utils.setup_logger('MAIN', args.verbosity)
     mainLogger.info("MTA-STS daemon starting...")
 
+    # Read config and populate with defaults
     with open(args.config, 'rb') as cfg_file:
         cfg = yaml.safe_load(cfg_file)
+    cfg = populate_cfg_defaults(cfg)
+
+    # Construct event loop
+    mainLogger.info("Starting eventloop...")
+    if not args.disable_uvloop:
+        if utils.enable_uvloop():
+            mainLogger.info("uvloop enabled.")
+        else:
+            mainLogger.info("uvloop is not available. "
+                            "Falling back to built-in event loop.")
+    evloop = asyncio.get_event_loop()
 
 
 if __name__ == '__main__':

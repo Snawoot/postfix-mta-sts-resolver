@@ -1,6 +1,9 @@
 host: 127.0.0.1
 port: 8461
-timeout: 4
+cache:
+  type: internal
+  options:
+    cache_size: 10000
 default_zone:
   strict_testing: false
   timeout: 4
