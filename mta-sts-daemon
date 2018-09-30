@@ -130,7 +130,7 @@ class STSSocketmapResponder(object):
                 task.cancel()
 
     async def process_request(self, raw_req):
-        res = True
+        have_policy = True
 
         # Parse request and canonicalize domain
         req_zone, _, req_domain = raw_req.decode('latin-1').partition(' ')
@@ -149,7 +149,8 @@ class STSSocketmapResponder(object):
         # Lookup for cached policy
         cached = self._cache.get(domain)
 
-        # Retrieve latest policy
+        # Check if newer policy exists or 
+        # retrieve policy from scratch if there is no cached one
         if cached is None:
             latest_pol_id  = None
         else:
@@ -167,20 +168,22 @@ class STSSocketmapResponder(object):
             self._cache.set(domain, cached)
         else:
             if cached is None:
-                res = False
+                have_policy = False
             else:
-                if cached.pol_body['max_age'] + cached.ts >= ts:
-                    mode = cached.pol_body['mode']
-                    if mode == 'none' or (mode == 'testing' and not zone_cfg.strict):
-                        res = False
-                else:
-                    res = False
+                # Check if cached policy is expired
+                if cached.pol_body['max_age'] + cached.ts < ts:
+                    have_policy = False
 
-        if res:
-            assert cached.pol_body['mx'], "Empty MX list for restrictive policy!"
-            mxlist = [mx.lstrip('*') for mx in set(cached.pol_body['mx'])]
-            resp = "OK secure match=" + ":".join(mxlist)
-            return pynetstring.encode(resp)
+
+        if have_policy:
+            mode = cached.pol_body['mode']
+            if mode == 'none' or (mode == 'testing' and not zone_cfg.strict):
+                return pynetstring.encode('NOTFOUND ')
+            else:
+                assert cached.pol_body['mx'], "Empty MX list for restrictive policy!"
+                mxlist = [mx.lstrip('*') for mx in set(cached.pol_body['mx'])]
+                resp = "OK secure match=" + ":".join(mxlist)
+                return pynetstring.encode(resp)
         else:
             return pynetstring.encode('NOTFOUND ')
 
