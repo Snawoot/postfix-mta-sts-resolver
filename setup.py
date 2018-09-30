@@ -1,7 +1,12 @@
 from setuptools import setup
 
+from os import path
+this_directory = path.abspath(path.dirname(__file__))
+with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
+    long_description = f.read()
+
 setup(name='postfix_mta_sts_resolver',
-      version='0.1',
+      version='0.1.1',
       description='Daemon which provides TLS client policy for Postfix via socketmap, according to domain MTA-STS policy',
       url='https://github.com/Snawoot/postfix-mta-sts-resolver',
       author='Vladislav Yarmak',
@@ -36,4 +41,6 @@ setup(name='postfix_mta_sts_resolver',
           "Topic :: Internet",
           "Topic :: Security",
       ],
+	  long_description=long_description,
+      long_description_content_type='text/markdown',
       zip_safe=True)
