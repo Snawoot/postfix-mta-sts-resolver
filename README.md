@@ -1,9 +1,20 @@
 postfix-mta-sts-resolver
 ========================
 
-!!! WORK IN PROGRESS !!!
+Daemon which provides TLS client policy for Postfix via socketmap, according to domain MTA-STS policy. Current support of RFC8461 is limited. Daemon lacks some minor features:
 
-Daemon which provides TLS client policy for Postfix via socketmap, according to domain MTA-STS policy 
+* Proactive policy fetch
+* Fetch error reporting
+* Fetch ratelimit
+
+## Dependencies
+
+* Python 3.5.3+
+* aiodns
+* aiohttp
+* pynetstring
+* PyYAML
+* (optional) uvloop
 
 
 ## Installation
@@ -60,3 +71,16 @@ venv/bin/python venv/bin/mta-sts-daemon
 
 Second option - specify new path in shebang of scripts installed in virtualenv. It is recommended to build virtualenv at same location which app shall occupy on target system.
 
+## Configuration
+
+See example config in source code directory. Default config location is: `/etc/postfix/mta-sts-daemon.yml`
+
+## Postfix configuration
+
+Add line like
+
+```
+smtp_tls_policy_maps = socketmap:inet:127.0.0.1:8461:postfix
+```
+
+into your `main.cf` config.
