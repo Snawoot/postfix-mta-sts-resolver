@@ -25,8 +25,10 @@ class STSResolver(object):
         self._http_timeout = aiohttp.ClientTimeout(total=timeout)
 
     async def resolve(self, domain, last_known_id=None):
+        if domain.startswith('.'):
+            return STSFetchResult.NONE, None
         # Cleanup domain name
-        domain = domain.strip('.')
+        domain = domain.rstrip('.')
 
         # Construct name of corresponding MTA-STS DNS record for domain
         sts_txt_domain = '_mta-sts.' + domain

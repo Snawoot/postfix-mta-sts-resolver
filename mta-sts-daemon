@@ -136,6 +136,10 @@ class STSSocketmapResponder(object):
         req_zone, _, req_domain = raw_req.decode('latin-1').partition(' ')
         domain = req_domain.lower().strip().rstrip('.')
 
+        # Skip lookups for parent domain policies
+        if domain.startswith('.'):
+            return pynetstring.encode('NOTFOUND ')
+
         # Find appropriate zone config
         if req_zone in self._zones:
             zone_cfg = self._zones[req_zone]
