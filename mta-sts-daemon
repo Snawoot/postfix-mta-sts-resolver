@@ -7,6 +7,8 @@ import postfix_mta_sts_resolver.utils as utils
 import postfix_mta_sts_resolver.defaults as defaults
 import pynetstring
 import yaml
+import signal
+from postfix_mta_sts_resolver.resolver import *
 
 
 def parse_args():
@@ -24,7 +26,6 @@ def parse_args():
     parser.add_argument("--disable-uvloop",
                         help="do not use uvloop even if it is available",
                         action="store_true")
-
 
     return parser.parse_args()
 
@@ -66,6 +67,28 @@ def populate_cfg_defaults(cfg):
     return cfg
 
 
+class ZoneEntry(object):
+    def __init__(self, strict, resolver):
+        self.strict = strict
+        self.resolver = resolver
+
+
+class STSSocketmapResponder(object):
+    def __init__(self, cfg, loop):
+        self._loop = loop
+        self._default_zone = ZoneEntry(cfg["default_zone"]["strict_testing"],
+                                       STSResolver(loop=loop,
+                                                   timeout=cfg["default_zone"]["timeout"]))
+
+        self._zones = dict((k, ZoneEntry(zone["strict_testing"],
+                                         STSResolver(loop=loop,
+                                                     timeout=zone["timeout"])))
+                           for k, zone in cfg["zones"].items())
+
+    async def handle_msg(self, reader, writer):
+        writer.close()
+
+
 def main():
     # Parse command line arguments and setup basic logging
     args = parse_args()
@@ -86,6 +109,35 @@ def main():
             mainLogger.info("uvloop is not available. "
                             "Falling back to built-in event loop.")
     evloop = asyncio.get_event_loop()
+    mainLogger.info("Eventloop started.")
+
+    # Construct request handler instance
+    responder = STSSocketmapResponder(cfg, evloop)
+
+    # Start server
+    start_server = asyncio.start_server(responder.handle_msg,
+                                        cfg['host'],
+                                        cfg['port'],
+                                        loop=evloop)
+    server = evloop.run_until_complete(start_server)
+    mainLogger.info("Server started.")
+
+    # Enter main loop
+    stop = asyncio.Future()
+    evloop.add_signal_handler(signal.SIGINT, stop.set_result, None)
+    mainLogger.debug("Signal handler defined.")
+    evloop.run_until_complete(stop)
+
+    # Handle interruption: shutdown properly
+    mainLogger.info("Got exit signal.")
+    server.close()
+    evloop.run_until_complete(server.wait_closed())
+    mainLogger.info("Server finished its work.")
+    tasks = list(asyncio.Task.all_tasks(loop=evloop))
+    if tasks:
+        for task in tasks:
+            task.cancel()
+        evloop.run_until_complete(asyncio.wait(tasks))
 
 
 if __name__ == '__main__':
