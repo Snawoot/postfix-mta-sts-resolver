@@ -103,13 +103,28 @@ class STSSocketmapResponder(object):
         try:
             while True:
                 fut = await queue.get()
+
+                # Check for shutdown
+                if fut is None:
+                    writer.close()
+                    return
+
                 logger.debug("Got new future from queue")
-                data = await fut
+                try:
+                    data = await fut
+                except Exception as e:
+                    logging.exception("Got exception from future: %s", e)
+                    writer.close()
+                    return
                 logger.debug("Future await complete: data=%s", repr(data))
                 writer.write(data)
                 logger.debug("Wrote: %s", repr(data))
                 await writer.drain()
         except asyncio.CancelledError:
+            try:
+                fut.cancel()
+            except:
+                pass
             while not queue.empty():
                 task = queue.get_nowait()
                 task.cancel()
@@ -203,8 +218,9 @@ class STSSocketmapResponder(object):
             try:
                 requests = self._decoder.feed(part)
             except:
-                # Reset decoder on stream error
-                self._decoder = pynetstring.Decoder()
+                # Bad protocol. Do shutdown
+                queue.put_nowait(None)
+                await sender
             else:
                 for req in requests:
                     logger.debug("Enq request: %s", repr(req))
