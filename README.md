@@ -1,7 +1,7 @@
 postfix-mta-sts-resolver
 ========================
 
-Daemon which provides TLS client policy for Postfix via socketmap, according to domain MTA-STS policy. Current support of RFC8461 is limited. Daemon lacks some minor features:
+Daemon which provides TLS client policy for Postfix via socketmap, according to domain MTA-STS policy. Current support of RFC8461 is limited - daemon lacks some minor features:
 
 * Proactive policy fetch
 * Fetch error reporting
@@ -84,3 +84,7 @@ smtp_tls_policy_maps = socketmap:inet:127.0.0.1:8461:postfix
 ```
 
 into your `main.cf` config.
+
+## Credits
+
+Inspired by [this forum thread](http://postfix.1071664.n5.nabble.com/MTA-STS-when-td95086.html).
