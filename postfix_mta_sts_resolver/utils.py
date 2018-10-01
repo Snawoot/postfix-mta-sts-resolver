@@ -75,3 +75,7 @@ def parse_mta_sts_policy(text):
         else:
             res[key] = value
     return res
+
+
+def is_plaintext(ct):
+    return ct.lower().partition(';')[0].strip() == 'text/plain'

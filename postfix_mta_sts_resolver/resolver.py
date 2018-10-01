@@ -3,7 +3,7 @@ import aiodns
 import aiohttp
 import enum
 from . import defaults
-from .utils import parse_mta_sts_record, parse_mta_sts_policy
+from .utils import parse_mta_sts_record, parse_mta_sts_policy, is_plaintext
 
 
 class BadSTSPolicy(Exception):
@@ -73,7 +73,7 @@ class STSResolver(object):
                 async with session.get(sts_policy_url, allow_redirects=False) as resp:
                     if resp.status != 200:
                         raise BadSTSPolicy()
-                    if resp.headers.get('Content-Type', None) != 'text/plain':
+                    if not is_plaintext(resp.headers.get('Content-Type', '')):
                         raise BadSTSPolicy()
                     policy_text = await resp.text()
         except:
