@@ -1,0 +1,10 @@
+Collecting pycares
+  Downloading https://files.pythonhosted.org/packages/89/5c/3a7e1a52d6abb52b9ca1a56d2df699936e89d8b98f75cfd60d03363e7c10/pycares-2.3.0.tar.gz (224kB)
+Requirement already satisfied: cffi>=1.5.0 in /usr/lib/pypy/lib_pypy (from pycares)
+Building wheels for collected packages: pycares
+  Running setup.py bdist_wheel for pycares: started
+  Running setup.py bdist_wheel for pycares: finished with status 'done'
+  Stored in directory: /root/.cache/pip/wheels/1b/05/16/da47eb345e8f05adee9145e6e0d0e2a30813af6b677afe9eff
+Successfully built pycares
+Installing collected packages: pycares
+Successfully installed pycares-2.3.0
