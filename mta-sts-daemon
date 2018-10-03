@@ -147,7 +147,7 @@ class STSSocketmapResponder(object):
             zone_cfg = self._default_zone
 
         # Lookup for cached policy
-        cached = self._cache.get(domain)
+        cached = await self._cache.get(domain)
 
         # Check if newer policy exists or 
         # retrieve policy from scratch if there is no cached one
@@ -161,11 +161,11 @@ class STSSocketmapResponder(object):
         ts = time.time()
         if status is STSFetchResult.NOT_CHANGED:
             cached = CacheEntry(ts, cached.pol_id, cached.pol_body)
-            self._cache.set(domain, cached)
+            await self._cache.set(domain, cached)
         elif status is STSFetchResult.VALID:
             pol_id, pol_body = policy
             cached = CacheEntry(ts, pol_id, pol_body)
-            self._cache.set(domain, cached)
+            await self._cache.set(domain, cached)
         else:
             if cached is None:
                 have_policy = False

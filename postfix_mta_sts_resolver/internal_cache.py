@@ -5,7 +5,7 @@ class InternalLRUCache(object):
         self._capacity = capacity
         self._cache = collections.OrderedDict()
 
-    def get(self, key):
+    async def get(self, key):
         try:
             value = self._cache.pop(key)
             self._cache[key] = value
@@ -13,7 +13,7 @@ class InternalLRUCache(object):
         except KeyError:
             return None
 
-    def set(self, key, value):
+    async def set(self, key, value):
         try:
             self._cache.pop(key)
         except KeyError:
