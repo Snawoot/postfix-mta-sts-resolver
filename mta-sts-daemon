@@ -134,11 +134,16 @@ class STSSocketmapResponder(object):
 
         # Parse request and canonicalize domain
         req_zone, _, req_domain = raw_req.decode('latin-1').partition(' ')
-        domain = req_domain.lower().strip().rstrip('.')
+
+        domain = req_domain
 
         # Skip lookups for parent domain policies
-        if domain.startswith('.'):
+        # Skip lookups to non-recepient domains or non-domains at all
+        if domain.startswith('.') or domain.startswith('[') or ':' in domain:
             return pynetstring.encode('NOTFOUND ')
+
+        # Normalize domain name
+        domain = req_domain.lower().strip().rstrip('.')
 
         # Find appropriate zone config
         if req_zone in self._zones:
