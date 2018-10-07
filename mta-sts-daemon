@@ -7,7 +7,6 @@ import postfix_mta_sts_resolver.utils as utils
 import postfix_mta_sts_resolver.defaults as defaults
 import pynetstring
 import yaml
-import signal
 from postfix_mta_sts_resolver.resolver import *
 import collections
 import time
@@ -112,8 +111,11 @@ class STSSocketmapResponder(object):
                 logger.debug("Got new future from queue")
                 try:
                     data = await fut
+                except asyncio.CancelledError:
+                    writer.close()
+                    return
                 except Exception as e:
-                    logging.exception("Got exception from future: %s", e)
+                    logging.exception("Unhandled exception from future: %s", e)
                     writer.close()
                     return
                 logger.debug("Future await complete: data=%s", repr(data))
@@ -273,22 +275,20 @@ def main():
     server = evloop.run_until_complete(start_server)
     mainLogger.info("Server started.")
 
-    # Enter main loop
-    stop = asyncio.Future()
-    evloop.add_signal_handler(signal.SIGINT, stop.set_result, None)
-    mainLogger.debug("Signal handler defined.")
-    evloop.run_until_complete(stop)
-
-    # Handle interruption: shutdown properly
-    mainLogger.info("Got exit signal.")
-    server.close()
-    evloop.run_until_complete(server.wait_closed())
-    mainLogger.info("Server finished its work.")
-    tasks = list(asyncio.Task.all_tasks(loop=evloop))
-    if tasks:
-        for task in tasks:
-            task.cancel()
-        evloop.run_until_complete(asyncio.wait(tasks))
+    try:
+        evloop.run_forever()
+    except KeyboardInterrupt:
+        # Handle interruption: shutdown properly
+        mainLogger.info("Got exit signal. "
+                        "Press Ctrl+C again to stop waiting connections to close.")
+        server.close()
+        try:
+            evloop.run_until_complete(server.wait_closed())
+        except KeyboardInterrupt:
+            pass
+        finally:
+            mainLogger.info("Server finished its work.")
+            evloop.close()
 
 
 if __name__ == '__main__':
