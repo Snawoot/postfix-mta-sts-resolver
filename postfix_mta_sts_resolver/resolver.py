@@ -23,6 +23,13 @@ class STSResolver(object):
         self._timeout = timeout
         self._resolver = aiodns.DNSResolver(timeout=timeout, loop=loop)
         self._http_timeout = aiohttp.ClientTimeout(total=timeout)
+        self._proxy_info = aiohttp.helpers.proxies_from_env().get('https', None)
+        if self._proxy_info is None:
+            self._proxy = None
+            self._proxy_auth = None
+        else:
+            self._proxy = self._proxy_info.proxy
+            self._proxy_auth = self._proxy_info.proxy_auth
 
     async def resolve(self, domain, last_known_id=None):
         if domain.startswith('.'):
@@ -69,8 +76,12 @@ class STSResolver(object):
 
         # Fetch actual policy
         try:
-            async with aiohttp.ClientSession(loop=self._loop, timeout=self._http_timeout) as session:
-                async with session.get(sts_policy_url, allow_redirects=False) as resp:
+            async with aiohttp.ClientSession(loop=self._loop,
+                                             timeout=self._http_timeout) as session:
+                async with session.get(sts_policy_url,
+                                       allow_redirects=False,
+                                       proxy=self._proxy,
+                                       proxy_auth=self._proxy_auth) as resp:
                     if resp.status != 200:
                         raise BadSTSPolicy()
                     if not is_plaintext(resp.headers.get('Content-Type', '')):
