@@ -51,10 +51,10 @@ Installing dependencies:
 
 
 ```bash
-python3 -m pip install -r requirements.txt
+sudo python3 -m pip install -r requirements.txt
 ```
 
-Now scripts can be run right from source directory.
+Now scripts can be run right in source directory.
 
 
 ### Method 4. Install into virtualenv
@@ -74,9 +74,62 @@ See [contrib/postfix-mta-sts.service](contrib/postfix-mta-sts.service) for examp
 All pip invocations can be run with `--user` option of `pip` installer. In this case superuser privileges are not required and package(s) are getting installed into user home directory. Usually, script executables will appear in `~/.local/bin`.
 
 
-## Configuration
+## Running
 
-See example config in source code directory. Default config location is: `/etc/postfix/mta-sts-daemon.yml`
+This package provides two executables available after installation in respective locations.
+
+
+### mta-sts-query
+
+`mta-sts-query` is a command line tool which fetches and outputs domain MTA-STS policies. Intended to be used for debug purposes.
+
+Synopsis:
+
+```
+$ mta-sts-query --help
+usage: mta-sts-query [-h] [-v {debug,info,warn,error,fatal}]
+                     domain [known_version]
+
+positional arguments:
+  domain                domain to fetch MTA-STS policy from
+  known_version         latest known version (default: None)
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -v {debug,info,warn,error,fatal}, --verbosity {debug,info,warn,error,fatal}
+                        logging verbosity (default: warn)
+```
+
+### mta-sts-daemon
+
+`mta-sts-daemon` is a daemon which provides external [TLS policy for Postfix SMTP client](http://www.postfix.org/TLS_README.html#client_tls_policy) via [socketmap interface](http://www.postfix.org/socketmap_table.5.html).
+
+You may find useful systemd unit file to run daemon in [contrib/postfix-mta-sts.service](contrib/postfix-mta-sts.service).
+
+Synopsis:
+
+```
+$ mta-sts-daemon --help
+usage: mta-sts-daemon [-h] [-v {debug,info,warn,error,fatal}] [-c FILE]
+                      [--disable-uvloop]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -v {debug,info,warn,error,fatal}, --verbosity {debug,info,warn,error,fatal}
+                        logging verbosity (default: info)
+  -c FILE, --config FILE
+                        config file location (default: /etc/postfix/mta-sts-
+                        daemon.yml)
+  --disable-uvloop      do not use uvloop even if it is available (default:
+                        False)
+```
+
+
+## MTA-STS Daemon configuration
+
+See [example config](mta-sts-daemon.yml.example) in source code directory. Default config location is: `/etc/postfix/mta-sts-daemon.yml`, but it can be overriden with command line option `-c FILE`.
+
+All options is self-explanatory, only exception is `strict_testing` option. If set to `true`, STS policy will be enforced even if domain announces `testing` MTA-STS mode. Useful for premature incorporation of MTA-STS against domains hesistating to go `enforce`. Please use with caution.
 
 
 ## Postfix configuration
@@ -87,7 +140,8 @@ Add line like
 smtp_tls_policy_maps = socketmap:inet:127.0.0.1:8461:postfix
 ```
 
-into your `main.cf` config.
+into your `main.cf` config and reload Postfix.
+
 
 ## Operability check
 
@@ -102,6 +156,8 @@ should return something like:
 ```
 secure match=mx1.dismail.de
 ```
+
+Postfix log should show `Verified TLS connection established to ...` instead of `Trusted TLS connection established to ...` when mail is getting sent to MTA-STS-enabled domain.
 
 
 ## Special cases of deployment
