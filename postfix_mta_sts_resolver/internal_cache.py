@@ -1,5 +1,6 @@
 import collections
 
+
 class InternalLRUCache(object):
     def __init__(self, capacity=10000):
         self._capacity = capacity

@@ -23,7 +23,8 @@ class STSResolver(object):
         self._timeout = timeout
         self._resolver = aiodns.DNSResolver(timeout=timeout, loop=loop)
         self._http_timeout = aiohttp.ClientTimeout(total=timeout)
-        self._proxy_info = aiohttp.helpers.proxies_from_env().get('https', None)
+        self._proxy_info = aiohttp.helpers.proxies_from_env().get('https',
+                                                                  None)
         if self._proxy_info is None:
             self._proxy = None
             self._proxy_auth = None
@@ -57,14 +58,16 @@ class STSResolver(object):
                 return STSFetchResult.NONE, None
 
         # Exactly one record should exist
-        txt_records = [rec for rec in txt_records if rec.text.startswith(b'v=STSv1')]
+        txt_records = [rec for rec in txt_records
+                       if rec.text.startswith(b'v=STSv1')]
         if len(txt_records) != 1:
             return STSFetchResult.NONE, None
 
         # Validate record
         txt_record = txt_records[0].text.decode('latin-1')
         mta_sts_record = parse_mta_sts_record(txt_record)
-        if mta_sts_record.get('v', None) != 'STSv1' or 'id' not in mta_sts_record:
+        if (mta_sts_record.get('v', None) != 'STSv1'
+                or 'id' not in mta_sts_record):
             return STSFetchResult.NONE, None
 
         # Obtain policy ID and return NOT_CHANGED if ID is equal to last known
@@ -72,12 +75,15 @@ class STSResolver(object):
             return STSFetchResult.NOT_CHANGED, None
 
         # Construct corresponding URL of MTA-STS policy
-        sts_policy_url = 'https://mta-sts.' + domain + '/.well-known/mta-sts.txt'
+        sts_policy_url = ('https://mta-sts.' +
+                          domain +
+                          '/.well-known/mta-sts.txt')
 
         # Fetch actual policy
         try:
             async with aiohttp.ClientSession(loop=self._loop,
-                                             timeout=self._http_timeout) as session:
+                                             timeout=self._http_timeout) \
+                                                 as session:
                 async with session.get(sts_policy_url,
                                        allow_redirects=False,
                                        proxy=self._proxy,

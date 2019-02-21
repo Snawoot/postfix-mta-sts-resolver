@@ -58,7 +58,8 @@ def enable_uvloop():
 
 
 def parse_mta_sts_record(rec):
-    d = dict(field.partition('=')[0::2] for field in (field.strip() for field in rec.split(';')) if field)
+    d = dict(field.partition('=')[0::2] for field in
+             (field.strip() for field in rec.split(';')) if field)
     return d
 
 
