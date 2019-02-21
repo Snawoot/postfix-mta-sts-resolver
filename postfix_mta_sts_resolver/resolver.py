@@ -2,8 +2,13 @@ import asyncio
 import aiodns
 import aiohttp
 import enum
+from io import BytesIO
 from . import defaults
 from .utils import parse_mta_sts_record, parse_mta_sts_policy, is_plaintext
+
+
+HARD_RESP_LIMIT = 64 * 1024
+CHUNK = 4096
 
 
 class BadSTSPolicy(Exception):
@@ -92,7 +97,20 @@ class STSResolver(object):
                         raise BadSTSPolicy()
                     if not is_plaintext(resp.headers.get('Content-Type', '')):
                         raise BadSTSPolicy()
-                    policy_text = await resp.text()
+                    if (int(resp.headers.get('Content-Length', '0')) > 
+                            HARD_RESP_LIMIT):
+                        raise BadSTSPolicy()
+                    policy_file = BytesIO()
+                    while policy_file.tell() <= HARD_RESP_LIMIT:
+                        chunk = await resp.content.read(CHUNK)
+                        if not chunk:
+                            break
+                        policy_file.write(chunk)
+                    else:
+                        raise BadSTSPolicy()
+                    charset = (resp.charset if resp.charset is not None
+                               else 'ascii')
+                    policy_text = policy_file.getvalue().decode(charset)
         except:
             return STSFetchResult.FETCH_ERROR, None
 
