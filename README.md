@@ -8,8 +8,9 @@ Daemon which provides TLS client policy for Postfix via socketmap, according to 
 * Fetch ratelimit
 
 
-## Dependencies
+## Requirements
 
+* Postfix 2.10 and later
 * Python 3.5.3+ (see ["Systems without Python 3.5+"](#systems-without-python-35) below if you haven't one)
 * aiodns
 * aiohttp
@@ -134,18 +135,22 @@ All options is self-explanatory, only exception is `strict_testing` option. If s
 
 ## Postfix configuration
 
-Add line like
+SMTP client of your Postfix instance must be able to validate peer certificates. In order to achieve that, you have to ensure [`smtp_tls_CAfile`](http://www.postfix.org/postconf.5.html#smtp_tls_CAfile) or [`smtp_tls_CApath`](http://www.postfix.org/postconf.5.html#smtp_tls_CApath) points to system CA bundle. Otherwise you'll get `Unverified TLS connection` even for peers with valid certificate, and delivery failures for MTA-STS-enabled destinations. Also note: even enabled [`tls_append_default_CA`](http://www.postfix.org/postconf.5.html#tls_append_default_CA) will not work alone if both `smtp_tls_CAfile` and `smtp_tls_CApath` are empty.
+
+Once certificate validation is enabled and your Postfix log shows "Trusted TLS connection ... " for destinations with valid certificates signed by public CA, you may enable MTA-STS by adding following line to `main.cf`:
 
 ```
 smtp_tls_policy_maps = socketmap:inet:127.0.0.1:8461:postfix
 ```
 
-into your `main.cf` config and reload Postfix.
+If your configuration already has some TLS policy maps, just add MTA-STS socketmap to list of configured maps accordingly to [`smtp_tls_policy_maps`](http://www.postfix.org/postconf.5.html#smtp_tls_policy_maps) syntax. TLS policy tables are searched in the specified order until a match is found, so you may have table with local overrides of TLS policy prior to MTA-STS socketmap. This may be useful for skipping network lookup for well-known destinations or relaxing security for broken destinations, announcing MTA-STS support.
+
+Reload Postfix after reconfiguration.
 
 
 ## Operability check
 
-Assuming default configuration. Following command:
+Assuming default MTA-STA daemon configuration. Following command:
 
 ```bash
 /usr/sbin/postmap -q dismail.de socketmap:inet:127.0.0.1:8461:postfix
@@ -157,7 +162,7 @@ should return something like:
 secure match=mx1.dismail.de
 ```
 
-Postfix log should show `Verified TLS connection established to ...` instead of `Trusted TLS connection established to ...` when mail is getting sent to MTA-STS-enabled domain.
+Postfix log should show `Verified TLS connection established to ...` instead of `Untrusted ...` or `Trusted TLS connection established to ...` when mail is getting sent to MTA-STS-enabled domain.
 
 
 ## Special cases of deployment
