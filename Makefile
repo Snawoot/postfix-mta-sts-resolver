@@ -37,4 +37,7 @@ version: $(PKG_NAME).egg-info/PKG-INFO
 upload: pkg version
 	$(PKGVENV)/bin/$(PYTHON) -m twine upload dist/$(PKG_NAME)-$(PKG_VERSION)*
 
+testupload: pkg version
+	$(PKGVENV)/bin/$(PYTHON) -m twine upload --repository-url https://test.pypi.org/legacy/ dist/$(PKG_NAME)-$(PKG_VERSION)*
+
 .PHONY: install clean uninstall pkg version
