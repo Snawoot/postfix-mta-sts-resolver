@@ -80,3 +80,16 @@ def parse_mta_sts_policy(text):
 
 def is_plaintext(ct):
     return ct.lower().partition(';')[0].strip() == 'text/plain'
+
+
+def filter_text(strings):
+    for S in strings:
+        if isinstance(S, str):
+            yield S
+        elif isinstance(S, bytes):
+            try:
+                yield S.decode('ascii')
+            except UnicodeDecodeError:
+                pass
+        else:
+            raise TypeError('Only bytes or strings are expected.')
