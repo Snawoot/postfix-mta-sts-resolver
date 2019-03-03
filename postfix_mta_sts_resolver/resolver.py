@@ -4,7 +4,8 @@ import aiohttp
 import enum
 from io import BytesIO
 from . import defaults
-from .utils import parse_mta_sts_record, parse_mta_sts_policy, is_plaintext
+from .utils import parse_mta_sts_record, parse_mta_sts_policy, is_plaintext, \
+                   filter_text
 
 
 HARD_RESP_LIMIT = 64 * 1024
@@ -62,15 +63,19 @@ class STSResolver(object):
             else:
                 return STSFetchResult.NONE, None
 
+        # workaround for floating return type of pycares
+        txt_records = filter_text(rec.text for rec in txt_records)
+
+        # RFC 8461 strictly defines version string as first field
+        txt_records = [txt for txt in txt_records
+                       if txt.startswith('v=STSv1')]
+
         # Exactly one record should exist
-        txt_records = [rec for rec in txt_records
-                       if rec.text.startswith('v=STSv1')]
         if len(txt_records) != 1:
             return STSFetchResult.NONE, None
 
         # Validate record
-        txt_record = txt_records[0].text
-        mta_sts_record = parse_mta_sts_record(txt_record)
+        mta_sts_record = parse_mta_sts_record(txt_records[0])
         if (mta_sts_record.get('v', None) != 'STSv1'
                 or 'id' not in mta_sts_record):
             return STSFetchResult.NONE, None
@@ -97,7 +102,7 @@ class STSResolver(object):
                         raise BadSTSPolicy()
                     if not is_plaintext(resp.headers.get('Content-Type', '')):
                         raise BadSTSPolicy()
-                    if (int(resp.headers.get('Content-Length', '0')) > 
+                    if (int(resp.headers.get('Content-Length', '0')) >
                             HARD_RESP_LIMIT):
                         raise BadSTSPolicy()
                     policy_file = BytesIO()
