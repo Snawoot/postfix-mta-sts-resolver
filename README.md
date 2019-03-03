@@ -17,7 +17,6 @@ Daemon which provides TLS client policy for Postfix via socketmap, according to 
 * pynetstring
 * PyYAML
 * (optional) uvloop
-* pycares>=2.3.0
 
 All dependency packages installed automatically if this package is installed via pip.
 
