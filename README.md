@@ -120,6 +120,8 @@ optional arguments:
   -c FILE, --config FILE
                         config file location (default: /etc/postfix/mta-sts-
                         daemon.yml)
+     -l FILE, --logfile FILE
+                        log file location (default: /var/log/mta-sts.log)                     
   --disable-uvloop      do not use uvloop even if it is available (default:
                         False)
 ```
