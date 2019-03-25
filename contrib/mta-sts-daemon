@@ -1,0 +1,18 @@
+#!/bin/sh
+
+# FreeBSD rc.d script
+
+. /etc/rc.subr
+
+name="mta_sts_daemon"
+rcvar=`set_rcvar`
+
+load_rc_config $name
+mta_sts_daemon_enable=${mta_sts_daemon_enable:=NO}
+config="/usr/local/etc/postfix/mta-sts-daemon.yml"
+mta_sts_daemon_user="mta-sts"
+
+command_interpreter="/usr/local/bin/python3.6"
+command="/usr/local/bin/mta-sts-daemon -c ${config}"
+start_cmd="/usr/sbin/daemon -u $mta_sts_daemon_user $command"
+run_rc_command "$1"
