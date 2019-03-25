@@ -1,5 +1,6 @@
 host: 127.0.0.1
 port: 8461
+logfile: /var/log/mta-sts.log
 cache:
   type: internal
   options:

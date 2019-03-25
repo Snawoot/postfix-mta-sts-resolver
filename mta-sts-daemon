@@ -25,6 +25,10 @@ def parse_args():
                         help="config file location",
                         metavar="FILE",
                         default=defaults.CONFIG_LOCATION)
+    parser.add_argument("-l", "--logfile",
+                        help="log file location",
+                        metavar="FILE",
+                        default=defaults.LOGFILE)
     parser.add_argument("--disable-uvloop",
                         help="do not use uvloop even if it is available",
                         action="store_true")
@@ -38,6 +42,7 @@ def populate_cfg_defaults(cfg):
 
     cfg['host'] = cfg.get('host', defaults.HOST)
     cfg['port'] = cfg.get('port', defaults.PORT)
+    cfg['logfile'] = cfg.get('logfile', defaults.LOGFILE)
 
     if 'cache' not in cfg:
         cfg['cache'] = {}
@@ -244,8 +249,8 @@ class STSSocketmapResponder(object):
 def main():
     # Parse command line arguments and setup basic logging
     args = parse_args()
-    mainLogger = utils.setup_logger('MAIN', args.verbosity)
-    utils.setup_logger('STS', args.verbosity)
+    mainLogger = utils.setup_logger('MAIN', args.verbosity, args.logfile )
+    utils.setup_logger('STS', args.verbosity, args.logfile)
     mainLogger.info("MTA-STS daemon starting...")
 
     # Read config and populate with defaults
