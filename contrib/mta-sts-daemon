@@ -10,6 +10,7 @@ rcvar=`set_rcvar`
 load_rc_config $name
 mta_sts_daemon_enable=${mta_sts_daemon_enable:=NO}
 config="/usr/local/etc/postfix/mta-sts-daemon.yml"
+log_file="/var/log/mta-sts.log"
 mta_sts_daemon_user="mta-sts"
 
 command_interpreter="/usr/local/bin/python3.6"
