@@ -41,7 +41,6 @@ def populate_cfg_defaults(cfg):
 
     cfg['host'] = cfg.get('host', defaults.HOST)
     cfg['port'] = cfg.get('port', defaults.PORT)
-    cfg['logfile'] = cfg.get('logfile', defaults.LOGFILE)
 
     if 'cache' not in cfg:
         cfg['cache'] = {}
