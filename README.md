@@ -64,7 +64,7 @@ See ["Building virtualenv"](#building-virtualenv)
 
 ### Common installation notes
 
-See also [contrib/README.md](contrib/README.md) for RHEL/OEL/Centos notes.
+See also [contrib/README.md](contrib/README.md) for RHEL/OEL/Centos and FreeBSD notes.
 
 See [contrib/postfix-mta-sts.service](contrib/postfix-mta-sts.service) for example of systemd unit file suitable to run daemon under systemd control.
 
