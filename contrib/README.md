@@ -23,3 +23,9 @@ To enable MTA-STS on system startup run
 systemctl enable mta-sts.service
 ```
 
+# FreeBSD rc.d file
+
+Place the provided mta-sts-daemon file to /usr/local/etc/rc.d
+
+To enable MTA-STS on system startup add mta_sts_daemon_enable="YES" to your /etc/rc.conf
+
