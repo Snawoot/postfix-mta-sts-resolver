@@ -22,7 +22,7 @@ def setup_logger(name, verbosity, logfile=None):
 
     logger = logging.getLogger(name)
     logger.setLevel(verbosity)
-    if logfile == "console":
+    if logfile is None:
         handler = logging.StreamHandler()
     else:
         handler = logging.FileHandler(logfile)
