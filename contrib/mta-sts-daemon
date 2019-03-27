@@ -14,6 +14,6 @@ log_file="/var/log/mta-sts.log"
 mta_sts_daemon_user="mta-sts"
 
 command_interpreter="/usr/local/bin/python3.6"
-command="/usr/local/bin/mta-sts-daemon -c ${config}"
+command="/usr/local/bin/mta-sts-daemon -c ${config} -l ${log_file}"
 start_cmd="/usr/sbin/daemon -u $mta_sts_daemon_user $command"
 run_rc_command "$1"
