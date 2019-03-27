@@ -19,9 +19,13 @@ class LogLevel(enum.IntEnum):
 
 
 def setup_logger(name, verbosity, logfile):
+
     logger = logging.getLogger(name)
     logger.setLevel(verbosity)
-    handler = logging.FileHandler(logfile)
+    if logfile == "console":
+        handler = logging.StreamHandler()
+    else:
+        handler = logging.FileHandler(logfile)
     handler.setLevel(verbosity)
     handler.setFormatter(logging.Formatter('%(asctime)s '
                                            '%(levelname)-8s '
