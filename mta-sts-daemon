@@ -27,7 +27,7 @@ def parse_args():
                         default=defaults.CONFIG_LOCATION)
     parser.add_argument("-l", "--logfile",
                         help="log file location",
-                        metavar="FILE",
+                        metavar="FILE")
                         default=defaults.LOGFILE)
     parser.add_argument("--disable-uvloop",
                         help="do not use uvloop even if it is available",
