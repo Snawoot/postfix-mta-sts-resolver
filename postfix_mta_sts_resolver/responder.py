@@ -191,7 +191,6 @@ class STSSocketmapResponder(object):
                     requests = self._decoder.feed(part)
                 except:
                     raise ParserInvokationError("Bad netstring protocol.")
-                pass
 
                 # Enqueue tasks for received requests
                 for req in requests:
