@@ -1,14 +1,18 @@
 [Unit]
 Description=Postfix MTA STS daemon
-After=syslog.target network.target 
+After=syslog.target network.target
 
 [Service]
-Type=simple
-User=mta-sts
-Group=mta-sts
-# This is the ExecStart path for RHEL7 using python 36 from the Software collections.
-# You may use a different python interpreter on other distributions
-ExecStart=/opt/rh/rh-python36/root/bin/mta-sts-daemon
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/systemctl start postfix-mta-sts-daemon@main.service
+ExecReload=/bin/systemctl start postfix-mta-sts-daemon@backup.service ; \
+/bin/sleep 3 ; \
+/bin/systemctl restart postfix-mta-sts-daemon@main.service ; \
+/bin/sleep 3 ; \
+/bin/systemctl stop postfix-mta-sts-daemon@backup.service
+ExecStop=/bin/systemctl stop postfix-mta-sts-daemon@main.service
 
 [Install]
 WantedBy=multi-user.target
+
