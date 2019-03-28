@@ -70,6 +70,9 @@ def populate_cfg_defaults(cfg):
 
     cfg['host'] = cfg.get('host', defaults.HOST)
     cfg['port'] = cfg.get('port', defaults.PORT)
+    cfg['reuse_port'] = cfg.get('reuse_port', defaults.REUSE_PORT)
+    cfg['shutdown_timeout'] = cfg.get('shutdown_timeout',
+                                      defaults.SHUTDOWN_TIMEOUT)
 
     if 'cache' not in cfg:
         cfg['cache'] = {}

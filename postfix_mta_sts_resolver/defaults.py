@@ -1,6 +1,8 @@
 HOST = "127.0.0.1"
 PORT = 8461
+REUSE_PORT = False
 TIMEOUT = 4
+SHUTDOWN_TIMEOUT = 20
 STRICT_TESTING = False
 CONFIG_LOCATION = "/etc/postfix/mta-sts-daemon.yml"
 CACHE_BACKEND = "internal"
