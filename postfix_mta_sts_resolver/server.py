@@ -3,6 +3,7 @@ import pynetstring
 import logging
 import time
 import collections
+import weakref
 
 from postfix_mta_sts_resolver.resolver import *
 
@@ -15,7 +16,10 @@ CacheEntry = collections.namedtuple('CacheEntry', ('ts', 'pol_id', 'pol_body'))
 
 class STSSocketmapResponder(object):
     def __init__(self, cfg, loop):
+        self._logger = logging.getLogger("STS")
         self._loop = loop
+        self._host = cfg['host']
+        self._port = cfg['port']
 
         # Construct configurations and resolvers for every socketmap name
         self._default_zone = ZoneEntry(cfg["default_zone"]["strict_testing"],
@@ -34,9 +38,28 @@ class STSSocketmapResponder(object):
             self._cache = postfix_mta_sts_resolver.internal_cache.InternalLRUCache(capacity)
         else:
             raise NotImplementedError("Unsupported cache type!")
+        self._children = weakref.WeakSet()
+
+    async def start(self):
+        def _spawn(reader, writer):
+            self._children.add(
+                self._loop.create_task(self.handler(reader, writer)))
+
+        self._server = await asyncio.start_server(_spawn,
+                                                  self._host,
+                                                  self._port)
+
+    async def stop(self):
+        self._server.close()
+        await self._server.wait_closed()
+        if self._children:
+            self._logger.debug("Cancelling %d client handlers...",
+                               len(self._children))
+            for task in self._children:
+                task.cancel()
+            await asyncio.wait(self._children)
 
     async def sender(self, queue, writer):
-        logger = logging.getLogger("STS")
         try:
             while True:
                 fut = await queue.get()
@@ -46,19 +69,19 @@ class STSSocketmapResponder(object):
                     writer.close()
                     return
 
-                logger.debug("Got new future from queue")
+                self._logger.debug("Got new future from queue")
                 try:
                     data = await fut
                 except asyncio.CancelledError:
                     writer.close()
                     return
                 except Exception as e:
-                    logging.exception("Unhandled exception from future: %s", e)
+                    self._logger.exception("Unhandled exception from future: %s", e)
                     writer.close()
                     return
-                logger.debug("Future await complete: data=%s", repr(data))
+                self._logger.debug("Future await complete: data=%s", repr(data))
                 writer.write(data)
-                logger.debug("Wrote: %s", repr(data))
+                self._logger.debug("Wrote: %s", repr(data))
                 await writer.drain()
         except asyncio.CancelledError:
             try:
@@ -137,9 +160,7 @@ class STSSocketmapResponder(object):
         fut = asyncio.ensure_future(self.process_request(raw_req), loop=self._loop)
         queue.put_nowait(fut)
 
-    async def handle_msg(self, reader, writer):
-        logger = logging.getLogger("STS")
-
+    async def handler(self, reader, writer):
         # Construct netstring parser
         self._decoder = pynetstring.Decoder()
 
@@ -156,7 +177,7 @@ class STSSocketmapResponder(object):
         while True:
             try:
                 part = await reader.read(4096)
-                logger.debug("Read: %s", repr(part))
+                self._logger.debug("Read: %s", repr(part))
             except asyncio.CancelledError as e:
                 cleanup()
                 return
@@ -175,5 +196,5 @@ class STSSocketmapResponder(object):
                 await sender
             else:
                 for req in requests:
-                    logger.debug("Enq request: %s", repr(req))
+                    self._logger.debug("Enq request: %s", repr(req))
                     self.enqueue_request(queue, req)
