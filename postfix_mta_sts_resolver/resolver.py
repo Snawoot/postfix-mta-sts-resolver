@@ -6,10 +6,7 @@ from io import BytesIO
 from . import defaults
 from .utils import parse_mta_sts_record, parse_mta_sts_policy, is_plaintext, \
                    filter_text
-
-
-HARD_RESP_LIMIT = 64 * 1024
-CHUNK = 4096
+from .constants import *
 
 
 class BadSTSPolicy(Exception):

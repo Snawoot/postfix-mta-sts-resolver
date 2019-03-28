@@ -5,7 +5,8 @@ import time
 import collections
 import weakref
 
-from postfix_mta_sts_resolver.resolver import *
+from .resolver import *
+from .constants import *
 
 
 ZoneEntry = collections.namedtuple('ZoneEntry', ('strict', 'resolver'))
@@ -155,46 +156,64 @@ class STSSocketmapResponder(object):
         else:
             return pynetstring.encode('NOTFOUND ')
 
-
-    def enqueue_request(self, queue, raw_req):
-        fut = asyncio.ensure_future(self.process_request(raw_req), loop=self._loop)
-        queue.put_nowait(fut)
-
     async def handler(self, reader, writer):
         # Construct netstring parser
         self._decoder = pynetstring.Decoder()
 
         # Construct queue for responses ordering
-        queue = asyncio.Queue(0, loop=self._loop)
+        queue = asyncio.Queue(QUEUE_LIMIT, loop=self._loop)
 
         # Create coroutine which awaits for steady responses and sends them
         sender = asyncio.ensure_future(self.sender(queue, writer), loop=self._loop)
 
-        def cleanup():
-            sender.cancel()
-            writer.close()
+        class ParserInvokationError(Exception):
+            pass
 
-        while True:
+        class EndOfStream(Exception):
+            pass
+
+        async def finalize():
             try:
-                part = await reader.read(4096)
+                await queue.put(None)
+            except asyncio.CancelledError:
+                sender.cancel()
+                raise
+            await sender
+
+        try:
+            while True:
+                #Extract and parse requests
+                part = await reader.read(CHUNK)
+                if not part:
+                    raise EndOfStream()
                 self._logger.debug("Read: %s", repr(part))
-            except asyncio.CancelledError as e:
-                cleanup()
-                return
-            except ConnectionError as e:
-                cleanup()
-                return
-            if not part:
-                cleanup()
-                return
+                try:
+                    requests = self._decoder.feed(part)
+                except:
+                    raise ParserInvokationError("Bad netstring protocol.")
+                pass
 
-            try:
-                requests = self._decoder.feed(part)
-            except:
-                # Bad protocol. Do shutdown
-                queue.put_nowait(None)
-                await sender
-            else:
+                # Enqueue tasks for received requests
                 for req in requests:
                     self._logger.debug("Enq request: %s", repr(req))
-                    self.enqueue_request(queue, req)
+                    fut = asyncio.ensure_future(self.process_request(req), loop=self._loop)
+                    await queue.put(fut)
+        except ParserInvokationError:
+            self._logger.warning("Bad netstring message received")
+            await finalize()
+        except (EndOfStream, ConnectionError, TimeoutError):
+            self._logger.debug("Client disconnected")
+            await finalize()
+        except OSError as e:
+            if e.errno == 107:
+                self._logger.debug("Client disconnected")
+                await finalize()
+            else:
+                self._logger.exception("Unhandled exception: %s", e)
+        except asyncio.CancelledError:
+            sender.cancel()
+            raise
+        except Exception as e:
+            self._logger.exception("Unhandled exception: %s", e)
+        finally:
+            writer.close()
