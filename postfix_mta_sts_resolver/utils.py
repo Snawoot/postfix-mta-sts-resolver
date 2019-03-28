@@ -1,6 +1,9 @@
 import enum
 import logging
 import asyncio
+import yaml
+
+import postfix_mta_sts_resolver.defaults as defaults
 
 
 class LogLevel(enum.IntEnum):
@@ -59,6 +62,49 @@ def enable_uvloop():
         return False
     else:
         return True
+
+
+def populate_cfg_defaults(cfg):
+    if not cfg:
+        cfg = {}
+
+    cfg['host'] = cfg.get('host', defaults.HOST)
+    cfg['port'] = cfg.get('port', defaults.PORT)
+
+    if 'cache' not in cfg:
+        cfg['cache'] = {}
+
+    cfg['cache']['type'] = cfg['cache'].get('type', defaults.CACHE_BACKEND)
+
+    if cfg['cache']['type'] == 'internal':
+        if 'options' not in cfg['cache']:
+            cfg['cache']['options'] = {}
+
+        cfg['cache']['options']['cache_size'] = cfg['cache']['options'].get('cache_size', defaults.INTERNAL_CACHE_SIZE)
+
+    def populate_zone(zone):
+        zone['timeout'] = zone.get('timeout', defaults.TIMEOUT)
+        zone['strict_testing'] = zone.get('strict_testing', defaults.STRICT_TESTING)
+        return zone
+
+    if 'default_zone' not in cfg:
+        cfg['default_zone'] = {}
+
+    populate_zone(cfg['default_zone'])
+
+    if 'zones' not in cfg:
+        cfg['zones'] = {}
+
+    for zone in cfg['zones'].values():
+        populate_zone(zone)
+
+    return cfg
+
+
+def load_config(filename):
+    with open(filename, 'rb') as cfg_file:
+        cfg = yaml.safe_load(cfg_file)
+    return populate_cfg_defaults(cfg)
 
 
 def parse_mta_sts_record(rec):
