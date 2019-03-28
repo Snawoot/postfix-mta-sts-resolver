@@ -210,10 +210,12 @@ class STSSocketmapResponder(object):
                 await finalize()
             else:
                 self._logger.exception("Unhandled exception: %s", e)
+                await finalize()
         except asyncio.CancelledError:
             sender.cancel()
             raise
         except Exception as e:
             self._logger.exception("Unhandled exception: %s", e)
+            await finalize()
         finally:
             writer.close()
