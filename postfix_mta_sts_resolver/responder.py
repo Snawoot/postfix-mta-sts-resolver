@@ -40,9 +40,8 @@ class STSSocketmapResponder(object):
 
         # Construct cache
         if cfg["cache"]["type"] == "internal":
-            import postfix_mta_sts_resolver.internal_cache
-            capacity = cfg["cache"]["options"]["cache_size"]
-            self._cache = postfix_mta_sts_resolver.internal_cache.InternalLRUCache(capacity)
+            from . import internal_cache
+            self._cache = internal_cache.InternalLRUCache(**cfg["cache"]["options"])
         else:
             raise NotImplementedError("Unsupported cache type!")
         self._children = weakref.WeakSet()
