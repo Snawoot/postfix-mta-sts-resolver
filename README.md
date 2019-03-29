@@ -45,19 +45,7 @@ sudo python3 -m pip install .
 Package scripts shall be available in standard executable locations upon completion.
 
 
-### Method 3. Running from project directory without installation
-
-Installing dependencies:
-
-
-```bash
-sudo python3 -m pip install -r requirements.txt
-```
-
-Now scripts can be run right in source directory.
-
-
-### Method 4. Install into virtualenv
+### Method 3. Install into virtualenv
 
 See ["Building virtualenv"](#building-virtualenv)
 
