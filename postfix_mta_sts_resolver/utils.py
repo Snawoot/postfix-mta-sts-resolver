@@ -173,6 +173,9 @@ def create_cache(type, options):
     if type == "internal":
         from . import internal_cache
         cache = internal_cache.InternalLRUCache(**options)
+    elif type == "sqlite":
+        from . import sqlite_cache
+        cache = sqlite_cache.SqliteCache(**options)
     else:
         raise NotImplementedError("Unsupported cache type!")
     return cache

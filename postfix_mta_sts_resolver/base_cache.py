@@ -1,4 +1,10 @@
+import collections
+
 from abc import ABC, abstractmethod
+
+
+CacheEntry = collections.namedtuple('CacheEntry', ('ts', 'pol_id', 'pol_body'))
+
 
 class BaseCache(ABC):
     @abstractmethod
