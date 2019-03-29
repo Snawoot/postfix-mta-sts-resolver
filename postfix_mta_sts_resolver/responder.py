@@ -4,9 +4,13 @@ import logging
 import time
 import collections
 import weakref
+import sys
+import os
+import socket
 
 from .resolver import *
 from .constants import *
+from .utils import create_custom_socket
 
 
 ZoneEntry = collections.namedtuple('ZoneEntry', ('strict', 'resolver'))
@@ -21,6 +25,8 @@ class STSSocketmapResponder(object):
         self._loop = loop
         self._host = cfg['host']
         self._port = cfg['port']
+        self._reuse_port = cfg['reuse_port']
+        self._shutdown_timeout = cfg['shutdown_timeout']
 
         # Construct configurations and resolvers for every socketmap name
         self._default_zone = ZoneEntry(cfg["default_zone"]["strict_testing"],
@@ -46,19 +52,53 @@ class STSSocketmapResponder(object):
             self._children.add(
                 self._loop.create_task(self.handler(reader, writer)))
 
-        self._server = await asyncio.start_server(_spawn,
-                                                  self._host,
-                                                  self._port)
+        reuse_opts = {
+            'host': self._host,
+            'port': self._port,
+        }
+        if self._reuse_port:
+            if sys.platform in ('win32', 'cygwin'):
+                opts = {
+                    'host': self._host,
+                    'port': self._port,
+                    'reuse_address': True,
+                }
+            elif os.name == 'posix':
+                if sys.platform.startswith('freebsd'):
+                    sockopts = [
+                        (socket.SOL_SOCKET, socket.SO_REUSEADDR, 1),
+                        (socket.SOL_SOCKET, 0x10000, 1),  # SO_REUSEPORT_LB
+                    ]
+                    sock = await create_custom_socket(self._host, self._port,
+                                                      options=sockopts)
+                    opts = {
+                        'sock': sock,
+                    }
+                else:
+                    opts = {
+                        'host': self._host,
+                        'port': self._port,
+                        'reuse_address': True,
+                        'reuse_port': True,
+                    }
+        self._server = await asyncio.start_server(_spawn, **opts)
 
     async def stop(self):
         self._server.close()
         await self._server.wait_closed()
         if self._children:
-            self._logger.debug("Cancelling %d client handlers...",
-                               len(self._children))
-            for task in self._children:
-                task.cancel()
-            await asyncio.wait(self._children)
+            self._logger.warning("Awaiting %d client handlers to finish...",
+                                 len(self._children))
+            remaining = asyncio.gather(*self._children, return_exceptions=True)
+            try:
+                await asyncio.wait_for(remaining, self._shutdown_timeout)
+            except asyncio.TimeoutError:
+                self._logger.warning("Shutdown timeout expired. "
+                                     "Remaining handlers terminated.")
+                try:
+                    await remaining
+                except asyncio.CancelledError:
+                    pass
 
     async def sender(self, queue, writer):
         try:

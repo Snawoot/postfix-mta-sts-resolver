@@ -2,6 +2,7 @@ import enum
 import logging
 import asyncio
 import yaml
+import socket
 
 import postfix_mta_sts_resolver.defaults as defaults
 
@@ -70,6 +71,9 @@ def populate_cfg_defaults(cfg):
 
     cfg['host'] = cfg.get('host', defaults.HOST)
     cfg['port'] = cfg.get('port', defaults.PORT)
+    cfg['reuse_port'] = cfg.get('reuse_port', defaults.REUSE_PORT)
+    cfg['shutdown_timeout'] = cfg.get('shutdown_timeout',
+                                      defaults.SHUTDOWN_TIMEOUT)
 
     if 'cache' not in cfg:
         cfg['cache'] = {}
@@ -143,3 +147,24 @@ def filter_text(strings):
                 pass
         else:
             raise TypeError('Only bytes or strings are expected.')
+
+
+async def create_custom_socket(host, port, *,
+                               family=socket.AF_UNSPEC,
+                               type=socket.SOCK_STREAM,
+                               flags=socket.AI_PASSIVE,
+                               options=None,
+                               loop=None):
+    if loop is None:
+        loop = asyncio.get_event_loop()
+    res = await loop.getaddrinfo(host, port,
+                                 family=family, type=type, flags=flags)
+    af, s_typ, proto, cname, sa = res[0]
+    sock = socket.socket(af, s_typ, proto)
+
+    if options is not None:
+        for level, optname, val in options:
+            sock.setsockopt(level, optname, val)
+
+    sock.bind(sa)
+    return sock
