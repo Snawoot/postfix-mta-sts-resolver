@@ -8,9 +8,9 @@ import logging
 import signal
 from functools import partial
 
-import postfix_mta_sts_resolver.utils as utils
-import postfix_mta_sts_resolver.defaults as defaults
-from postfix_mta_sts_resolver.responder import STSSocketmapResponder
+from . import utils
+from . import defaults
+from .responder import STSSocketmapResponder
 
 
 def parse_args():

@@ -3,9 +3,9 @@ import aiodns
 import aiohttp
 import enum
 from io import BytesIO
+
 from . import defaults
-from .utils import parse_mta_sts_record, parse_mta_sts_policy, is_plaintext, \
-                   filter_text
+from .utils import *
 from .constants import *
 
 

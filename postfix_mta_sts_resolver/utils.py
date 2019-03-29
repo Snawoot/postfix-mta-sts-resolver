@@ -4,7 +4,7 @@ import asyncio
 import yaml
 import socket
 
-import postfix_mta_sts_resolver.defaults as defaults
+from . import defaults
 
 
 class LogLevel(enum.IntEnum):

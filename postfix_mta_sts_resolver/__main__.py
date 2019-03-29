@@ -2,10 +2,10 @@
 
 import sys
 import argparse
-import postfix_mta_sts_resolver.utils as utils
-from postfix_mta_sts_resolver.resolver import STSResolver
 import asyncio
 
+from . import utils
+from .resolver import STSResolver
 
 def parse_args():
     parser = argparse.ArgumentParser(
