@@ -6,7 +6,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(name='postfix_mta_sts_resolver',
-      version='0.2.9',
+      version='0.3.0',
       description='Daemon which provides TLS client policy for Postfix via socketmap, according to domain MTA-STS policy',
       url='https://github.com/Snawoot/postfix-mta-sts-resolver',
       author='Vladislav Yarmak',
@@ -33,7 +33,7 @@ setup(name='postfix_mta_sts_resolver',
           "Programming Language :: Python :: 3.5",
           "License :: OSI Approved :: MIT License",
           "Operating System :: OS Independent",
-          "Development Status :: 4 - Beta",
+          "Development Status :: 5 - Production/Stable",
           "Environment :: No Input/Output (Daemon)",
           "Intended Audience :: System Administrators",
           "Natural Language :: English",
