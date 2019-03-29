@@ -7,3 +7,4 @@ STRICT_TESTING = False
 CONFIG_LOCATION = "/etc/postfix/mta-sts-daemon.yml"
 CACHE_BACKEND = "internal"
 INTERNAL_CACHE_SIZE = 10000
+REDIS_TIMEOUT = 5

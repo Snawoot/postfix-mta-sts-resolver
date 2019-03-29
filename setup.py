@@ -23,6 +23,7 @@ setup(name='postfix_mta_sts_resolver',
           'aiohttp>=3.4.4',
           'PyYAML>=3.12',
           'aiosqlite>=0.9.0',
+          'aioredis>=1.2.0',
       ],
       entry_points={
           'console_scripts': [

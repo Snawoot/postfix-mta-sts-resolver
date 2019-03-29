@@ -11,6 +11,9 @@ class InternalLRUCache(BaseCache):
     async def setup(self):
         pass
 
+    async def teardown(self):
+        pass
+
     async def get(self, key):
         try:
             value = self._cache.pop(key)

@@ -176,6 +176,9 @@ def create_cache(type, options):
     elif type == "sqlite":
         from . import sqlite_cache
         cache = sqlite_cache.SqliteCache(**options)
+    elif type == "redis":
+        from . import redis_cache
+        cache = redis_cache.RedisCache(**options)
     else:
         raise NotImplementedError("Unsupported cache type!")
     return cache

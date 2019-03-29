@@ -18,3 +18,7 @@ class BaseCache(ABC):
     @abstractmethod
     async def set(self, key, value):
         pass
+
+    @abstractmethod
+    async def teardown(self):
+        pass
