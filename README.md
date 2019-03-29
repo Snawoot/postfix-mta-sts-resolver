@@ -126,6 +126,10 @@ optional arguments:
                         False)
 ```
 
+#### Seamless restart/upgrade/reload
+
+By default mta-sts-daemon allows its multiple instances to share same port (on Linux/FreeBSD/Windows). Therefore, restart or upgrade of daemon can be performed seamlessly. Set of unit files for systemd in [contrib/](contrib/) directory implements "reload" by mean of running backup instance when main instance is getting restarted.
+
 
 ## MTA-STS Daemon configuration
 
