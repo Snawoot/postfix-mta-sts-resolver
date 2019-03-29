@@ -17,6 +17,7 @@ class SqliteCache(BaseCache):
         queries = [
         "create table if not exists sts_policy_cache (domain text, ts integer, pol_id text, pol_body text)",
         "create unique index if not exists sts_policy_domain on sts_policy_cache (domain)",
+        "create index if not exists sts_policy_domain_ts on sts_policy_cache (domain, ts)",
         ]
         async with aiosqlite.connect(self._filename) as db:
             for q in queries:
@@ -31,7 +32,7 @@ class SqliteCache(BaseCache):
                 res = await cur.fetchone()
         if res is not None:
             ts, pol_id, pol_body = res
-            pol_id = int(pol_id)
+            ts = int(ts)
             pol_body = json.loads(pol_body)
             return CacheEntry(ts, pol_id, pol_body)
         else:
@@ -48,6 +49,7 @@ class SqliteCache(BaseCache):
                 await db.commit()
             except sqlite3.IntegrityError:
                 await db.execute('update sts_policy_cache set ts = ?, '
-                                 'pol_id = ?, pol_body = ? where domain = ?',
-                                 (int(ts), pol_id, pol_body, key))
+                                 'pol_id = ?, pol_body = ? where domain = ? '
+                                 'and ts < ?',
+                                 (int(ts), pol_id, pol_body, key, int(ts)))
                 await db.commit()
