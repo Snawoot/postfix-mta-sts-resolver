@@ -97,7 +97,3 @@ def main():
     evloop.run_until_complete(amain(cfg, evloop))
     evloop.close()
     mainLogger.info("Server finished its work.")
-
-
-if __name__ == '__main__':
-    main()

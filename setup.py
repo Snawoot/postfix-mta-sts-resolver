@@ -23,10 +23,12 @@ setup(name='postfix_mta_sts_resolver',
           'aiohttp>=3.4.4',
           'PyYAML>=3.12',
       ],
-      scripts=[
-          'mta-sts-daemon',
-          'mta-sts-query',
-      ],
+      entry_points={
+          'console_scripts': [
+              'mta-sts-daemon=postfix_mta_sts_resolver.daemon:main',
+              'mta-sts-query=postfix_mta_sts_resolver.__main__:main',
+          ],
+      },
       classifiers=[
           "Programming Language :: Python :: 3.5",
           "License :: OSI Approved :: MIT License",
