@@ -6,9 +6,11 @@ import collections
 import weakref
 import sys
 import os
+import socket
 
 from .resolver import *
 from .constants import *
+from .utils import create_custom_socket
 
 
 ZoneEntry = collections.namedtuple('ZoneEntry', ('strict', 'resolver'))
@@ -50,21 +52,36 @@ class STSSocketmapResponder(object):
             self._children.add(
                 self._loop.create_task(self.handler(reader, writer)))
 
-        reuse_opts = {}
+        reuse_opts = {
+            'host': self._host,
+            'port': self._port,
+        }
         if self._reuse_port:
             if sys.platform in ('win32', 'cygwin'):
-                reuse_opts = {
+                opts = {
+                    'host': self._host,
+                    'port': self._port,
                     'reuse_address': True,
                 }
             elif os.name == 'posix':
-                reuse_opts = {
-                    'reuse_address': True,
-                    'reuse_port': True,
-                }
-        self._server = await asyncio.start_server(_spawn,
-                                                  self._host,
-                                                  self._port,
-                                                  **reuse_opts)
+                if sys.platform.startswith('freebsd'):
+                    sockopts = [
+                        (socket.SOL_SOCKET, socket.SO_REUSEADDR, 1),
+                        (socket.SOL_SOCKET, 0x10000, 1),  # SO_REUSEPORT_LB
+                    ]
+                    sock = await create_custom_socket(self._host, self._port,
+                                                      options=sockopts)
+                    opts = {
+                        'sock': sock,
+                    }
+                else:
+                    opts = {
+                        'host': self._host,
+                        'port': self._port,
+                        'reuse_address': True,
+                        'reuse_port': True,
+                    }
+        self._server = await asyncio.start_server(_spawn, **opts)
 
     async def stop(self):
         self._server.close()
