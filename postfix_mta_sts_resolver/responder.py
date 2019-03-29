@@ -11,12 +11,10 @@ import socket
 from .resolver import *
 from .constants import *
 from .utils import create_custom_socket
+from .base_cache import CacheEntry
 
 
 ZoneEntry = collections.namedtuple('ZoneEntry', ('strict', 'resolver'))
-
-
-CacheEntry = collections.namedtuple('CacheEntry', ('ts', 'pol_id', 'pol_body'))
 
 
 class STSSocketmapResponder(object):
@@ -39,18 +37,16 @@ class STSSocketmapResponder(object):
                            for k, zone in cfg["zones"].items())
 
         # Construct cache
-        if cfg["cache"]["type"] == "internal":
-            import postfix_mta_sts_resolver.internal_cache
-            capacity = cfg["cache"]["options"]["cache_size"]
-            self._cache = postfix_mta_sts_resolver.internal_cache.InternalLRUCache(capacity)
-        else:
-            raise NotImplementedError("Unsupported cache type!")
+        self._cache = create_cache(cfg["cache"]["type"],
+                                   cfg["cache"]["options"])
         self._children = weakref.WeakSet()
 
     async def start(self):
         def _spawn(reader, writer):
             self._children.add(
                 self._loop.create_task(self.handler(reader, writer)))
+
+        await self._cache.setup()
 
         reuse_opts = {
             'host': self._host,
@@ -156,7 +152,13 @@ class STSSocketmapResponder(object):
             zone_cfg = self._default_zone
 
         # Lookup for cached policy
-        cached = await self._cache.get(domain)
+        try:
+            cached = await self._cache.get(domain)
+        except asyncio.CancelledError:
+            raise
+        except Exception as e:
+            self._logger.exception("Cache get failed: %s", str(e))
+            cached = None
 
         # Check if newer policy exists or 
         # retrieve policy from scratch if there is no cached one
@@ -167,14 +169,22 @@ class STSSocketmapResponder(object):
         status, policy = await zone_cfg.resolver.resolve(domain, latest_pol_id)
 
         # Update local cache
+        async def cache_set(domain, entry):
+            try:
+                await self._cache.set(domain, entry)
+            except asyncio.CancelledError:
+                raise
+            except Exception as e:
+                self._logger.exception("Cache set failed: %s", str(e))
+
         ts = time.time()
         if status is STSFetchResult.NOT_CHANGED:
             cached = CacheEntry(ts, cached.pol_id, cached.pol_body)
-            await self._cache.set(domain, cached)
+            await cache_set(domain, cached)
         elif status is STSFetchResult.VALID:
             pol_id, pol_body = policy
             cached = CacheEntry(ts, pol_id, pol_body)
-            await self._cache.set(domain, cached)
+            await cache_set(domain, cached)
         else:
             if cached is None:
                 have_policy = False

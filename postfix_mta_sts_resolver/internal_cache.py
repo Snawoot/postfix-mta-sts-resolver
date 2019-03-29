@@ -1,10 +1,15 @@
 import collections
 
+from .base_cache import BaseCache
 
-class InternalLRUCache(object):
-    def __init__(self, capacity=10000):
-        self._capacity = capacity
+
+class InternalLRUCache(BaseCache):
+    def __init__(self, cache_size=10000):
+        self._cache_size = cache_size
         self._cache = collections.OrderedDict()
+
+    async def setup(self):
+        pass
 
     async def get(self, key):
         try:
@@ -18,6 +23,6 @@ class InternalLRUCache(object):
         try:
             self._cache.pop(key)
         except KeyError:
-            if len(self._cache) >= self._capacity:
+            if len(self._cache) >= self._cache_size:
                 self._cache.popitem(last=False)
         self._cache[key] = value
