@@ -168,3 +168,11 @@ async def create_custom_socket(host, port, *,
 
     sock.bind(sa)
     return sock
+
+def create_cache(type, options):
+    if type == "internal":
+        from . import internal_cache
+        cache = internal_cache.InternalLRUCache(**options)
+    else:
+        raise NotImplementedError("Unsupported cache type!")
+    return cache

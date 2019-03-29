@@ -39,11 +39,8 @@ class STSSocketmapResponder(object):
                            for k, zone in cfg["zones"].items())
 
         # Construct cache
-        if cfg["cache"]["type"] == "internal":
-            from . import internal_cache
-            self._cache = internal_cache.InternalLRUCache(**cfg["cache"]["options"])
-        else:
-            raise NotImplementedError("Unsupported cache type!")
+        self._cache = create_cache(cfg["cache"]["type"],
+                                   cfg["cache"]["options"])
         self._children = weakref.WeakSet()
 
     async def start(self):
