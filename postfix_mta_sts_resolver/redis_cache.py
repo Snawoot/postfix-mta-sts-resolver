@@ -10,7 +10,7 @@ from .base_cache import BaseCache, CacheEntry
 
 def pack_entry(entry):
     ts, pol_id, pol_body = entry
-    obj = dict(pol_id=pol_id, pol_body=pol_body)
+    obj = (pol_id, pol_body)
     # add unique seed to entry in order to avoid set collisions
     # and use ZSET two-index table
     packed = uuid.uuid4().bytes + json.dumps(obj).encode('utf-8')
@@ -20,7 +20,7 @@ def pack_entry(entry):
 def unpack_entry(packed):
     bin_obj = packed[16:]
     obj = json.loads(bin_obj.decode('utf-8'))
-    pol_id, pol_body = obj['pol_id'], obj['pol_body']
+    pol_id, pol_body = obj
     return CacheEntry(ts=0, pol_id=pol_id, pol_body=pol_body)
 
 
