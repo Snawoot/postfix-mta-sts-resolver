@@ -3,7 +3,7 @@ Description=Postfix MTA STS daemon instance
 After=syslog.target network.target 
 
 [Service]
-Type=simple
+Type=notify
 User=mta-sts
 Group=mta-sts
 # This is the ExecStart path for RHEL7 using python 36 from the Software collections.
@@ -11,6 +11,7 @@ Group=mta-sts
 ExecStart=/opt/rh/rh-python36/root/bin/mta-sts-daemon
 Restart=always
 KillMode=process
+TimeoutStartSec=10
 TimeoutStopSec=30
 
 [Install]
