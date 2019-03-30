@@ -7,9 +7,7 @@ Type=oneshot
 RemainAfterExit=yes
 ExecStart=/bin/systemctl start postfix-mta-sts-daemon@main.service
 ExecReload=/bin/systemctl start postfix-mta-sts-daemon@backup.service ; \
-/bin/sleep 3 ; \
 /bin/systemctl restart postfix-mta-sts-daemon@main.service ; \
-/bin/sleep 3 ; \
 /bin/systemctl stop postfix-mta-sts-daemon@backup.service
 ExecStop=/bin/systemctl stop postfix-mta-sts-daemon@main.service
 

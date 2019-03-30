@@ -24,6 +24,7 @@ setup(name='postfix_mta_sts_resolver',
           'PyYAML>=3.12',
           'aiosqlite>=0.9.0',
           'aioredis>=1.2.0',
+          'sdnotify>=0.3.2',
       ],
       entry_points={
           'console_scripts': [
