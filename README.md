@@ -7,6 +7,8 @@ Daemon which provides TLS client policy for Postfix via socketmap, according to 
 * Fetch error reporting
 * Fetch ratelimit
 
+Server has configurable cache backend which allows to store cached STS policies in memory (`internal`), file (`sqlite`) or in Redis database (`redis`).
+
 
 ## Requirements
 
@@ -14,6 +16,8 @@ Daemon which provides TLS client policy for Postfix via socketmap, according to 
 * Python 3.5.3+ (see ["Systems without Python 3.5+"](#systems-without-python-35) below if you haven't one)
 * aiodns
 * aiohttp
+* aiosqlite
+* aioredis
 * pynetstring
 * PyYAML
 * (optional) uvloop

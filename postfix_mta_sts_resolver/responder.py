@@ -95,6 +95,7 @@ class STSSocketmapResponder(object):
                     await remaining
                 except asyncio.CancelledError:
                     pass
+        await self._cache.teardown()
 
     async def sender(self, queue, writer):
         try:

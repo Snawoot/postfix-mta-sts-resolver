@@ -53,3 +53,6 @@ class SqliteCache(BaseCache):
                                  'and ts < ?',
                                  (int(ts), pol_id, pol_body, key, int(ts)))
                 await db.commit()
+
+    async def teardown(self):
+        pass
