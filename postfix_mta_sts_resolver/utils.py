@@ -183,3 +183,17 @@ def create_cache(type, options):
     else:
         raise NotImplementedError("Unsupported cache type!")
     return cache
+
+class NoDefault:
+    pass
+
+NODEFAULT = NoDefault()
+
+async def _anext(gen, default=NODEFAULT):
+    try:
+        return await gen.__anext__()
+    except StopAsyncIteration:
+        if default is NODEFAULT:
+            raise
+        else:
+            return default

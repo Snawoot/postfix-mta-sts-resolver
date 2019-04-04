@@ -15,6 +15,8 @@ Reference for configuration values:
       * `cache_size`: (int) number of cache entries to store in memory
     * Options for `sqlite` type:
       * `filename`: (str) path to database file
+      * `threads`: (int) number of threads in pool for SQLite connections
+      * `timeout`: (float) timeout in seconds for acquiring connection from pool or DB lock
     * Options for `redis` type:
       * All parameters are passed to [aioredis.create_redis_pool](https://aioredis.readthedocs.io/en/latest/api_reference.html#aioredis.create_redis_pool). Use it for parameter reference.
 * `default_zone`:
