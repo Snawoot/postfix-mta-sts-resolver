@@ -175,6 +175,7 @@ class STSSocketmapResponder(object):
         # Check if cached record exists and recent enough to omit
         # DNS lookup and cache update
         if cached is None or ts - cached.ts > self._grace:
+            self._logger.debug("Lookup PERFORMED: domain = %s", domain)
             # Check if newer policy exists or 
             # retrieve policy from scratch if there is no cached one
             latest_pol_id = None if cached is None else cached.pol_id
@@ -194,6 +195,8 @@ class STSSocketmapResponder(object):
                     # Check if cached policy is expired
                     if cached.pol_body['max_age'] + cached.ts < ts:
                         have_policy = False
+        else:
+            self._logger.debug("Lookup skipped: domain = %s", domain)
 
 
         if have_policy:
