@@ -74,6 +74,7 @@ def populate_cfg_defaults(cfg):
     cfg['reuse_port'] = cfg.get('reuse_port', defaults.REUSE_PORT)
     cfg['shutdown_timeout'] = cfg.get('shutdown_timeout',
                                       defaults.SHUTDOWN_TIMEOUT)
+    cfg['cache_grace'] = cfg.get('cache_grace', defaults.CACHE_GRACE)
 
     if 'cache' not in cfg:
         cfg['cache'] = {}

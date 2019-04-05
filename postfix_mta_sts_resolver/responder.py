@@ -25,6 +25,7 @@ class STSSocketmapResponder(object):
         self._port = cfg['port']
         self._reuse_port = cfg['reuse_port']
         self._shutdown_timeout = cfg['shutdown_timeout']
+        self._grace = cfg['cache_grace']
 
         # Construct configurations and resolvers for every socketmap name
         self._default_zone = ZoneEntry(cfg["default_zone"]["strict_testing"],
@@ -131,6 +132,15 @@ class STSSocketmapResponder(object):
                 task.cancel()
 
     async def process_request(self, raw_req):
+        # Update local cache
+        async def cache_set(domain, entry):
+            try:
+                await self._cache.set(domain, entry)
+            except asyncio.CancelledError:
+                raise
+            except Exception as e:
+                self._logger.exception("Cache set failed: %s", str(e))
+
         have_policy = True
 
         # Parse request and canonicalize domain
@@ -161,38 +171,29 @@ class STSSocketmapResponder(object):
             self._logger.exception("Cache get failed: %s", str(e))
             cached = None
 
-        # Check if newer policy exists or 
-        # retrieve policy from scratch if there is no cached one
-        if cached is None:
-            latest_pol_id  = None
-        else:
-            latest_pol_id = cached.pol_id
-        status, policy = await zone_cfg.resolver.resolve(domain, latest_pol_id)
-
-        # Update local cache
-        async def cache_set(domain, entry):
-            try:
-                await self._cache.set(domain, entry)
-            except asyncio.CancelledError:
-                raise
-            except Exception as e:
-                self._logger.exception("Cache set failed: %s", str(e))
-
         ts = time.time()
-        if status is STSFetchResult.NOT_CHANGED:
-            cached = CacheEntry(ts, cached.pol_id, cached.pol_body)
-            await cache_set(domain, cached)
-        elif status is STSFetchResult.VALID:
-            pol_id, pol_body = policy
-            cached = CacheEntry(ts, pol_id, pol_body)
-            await cache_set(domain, cached)
-        else:
-            if cached is None:
-                have_policy = False
+        # Check if cached record exists and recent enough to omit
+        # DNS lookup and cache update
+        if cached is None or ts - cached.ts > self._grace:
+            # Check if newer policy exists or 
+            # retrieve policy from scratch if there is no cached one
+            latest_pol_id = None if cached is None else cached.pol_id
+            status, policy = await zone_cfg.resolver.resolve(domain, latest_pol_id)
+
+            if status is STSFetchResult.NOT_CHANGED:
+                cached = CacheEntry(ts, cached.pol_id, cached.pol_body)
+                await cache_set(domain, cached)
+            elif status is STSFetchResult.VALID:
+                pol_id, pol_body = policy
+                cached = CacheEntry(ts, pol_id, pol_body)
+                await cache_set(domain, cached)
             else:
-                # Check if cached policy is expired
-                if cached.pol_body['max_age'] + cached.ts < ts:
+                if cached is None:
                     have_policy = False
+                else:
+                    # Check if cached policy is expired
+                    if cached.pol_body['max_age'] + cached.ts < ts:
+                        have_policy = False
 
 
         if have_policy:
