@@ -3,10 +3,10 @@ import pynetstring
 import logging
 import time
 import collections
-import weakref
 import sys
 import os
 import socket
+from functools import partial
 
 from .resolver import *
 from .constants import *
@@ -40,12 +40,16 @@ class STSSocketmapResponder(object):
         # Construct cache
         self._cache = create_cache(cfg["cache"]["type"],
                                    cfg["cache"]["options"])
-        self._children = weakref.WeakSet()
+        self._children = set()
 
     async def start(self):
         def _spawn(reader, writer):
-            self._children.add(
-                self._loop.create_task(self.handler(reader, writer)))
+            def done_cb(task, fut):
+                self._children.discard(task)
+            t = self._loop.create_task(self.handler(reader, writer))
+            t.add_done_callback(partial(done_cb, t))
+            self._children.add(t)
+            self._logger.debug("len(self._children) = %d", len(self._children))
 
         await self._cache.setup()
 
@@ -83,10 +87,11 @@ class STSSocketmapResponder(object):
     async def stop(self):
         self._server.close()
         await self._server.wait_closed()
-        if self._children:
+        while True:
             self._logger.warning("Awaiting %d client handlers to finish...",
                                  len(self._children))
             remaining = asyncio.gather(*self._children, return_exceptions=True)
+            self._children.clear()
             try:
                 await asyncio.wait_for(remaining, self._shutdown_timeout)
             except asyncio.TimeoutError:
@@ -96,6 +101,9 @@ class STSSocketmapResponder(object):
                     await remaining
                 except asyncio.CancelledError:
                     pass
+            await asyncio.sleep(1)
+            if not self._children:
+                break
         await self._cache.teardown()
 
     async def sender(self, queue, writer):
@@ -272,4 +280,7 @@ class STSSocketmapResponder(object):
             self._logger.exception("Unhandled exception: %s", e)
             await finalize()
         finally:
-            writer.close()
+            try:
+                writer.close()
+            except:
+                pass
