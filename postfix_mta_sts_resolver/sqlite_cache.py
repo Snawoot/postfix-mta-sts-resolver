@@ -3,8 +3,8 @@ import aiosqlite
 import sqlite3
 import json
 import logging
+from functools import partial
 
-from .utils import _anext
 from .defaults import SQLITE_THREADS, SQLITE_TIMEOUT
 from .base_cache import BaseCache, CacheEntry
 
@@ -20,13 +20,16 @@ class SqliteConnPool:
         self._stopped = False
 
     async def _new_conn(self):
-        async def gen():
-            async with aiosqlite.connect(*self._conn_args, **self._conn_kwargs) as c:
-                for q in self._init_queries:
-                    await c.execute(q)
-                yield c
-        it = gen()
-        return it, await _anext(it)
+        cm = aiosqlite.connect(*self._conn_args, **self._conn_kwargs)
+        c = await cm.__aenter__()
+        free = partial(cm.__aexit__, None, None, None)
+        try:
+            for q in self._init_queries:
+                await c.execute(q)
+        except:
+            await free()
+            raise
+        return free, c
 
     async def prepare(self):
         for _ in range(self._threads):
@@ -38,8 +41,8 @@ class SqliteConnPool:
         self._stopped = True
         try:
             while True:
-                g, db = self._free_conns.get_nowait()
-                await _anext(g, None)
+                free, db = self._free_conns.get_nowait()
+                await free()
         except asyncio.QueueEmpty:
             pass
 
@@ -53,11 +56,11 @@ class SqliteConnPool:
 
             async def __aexit__(s, exc_type, exc, tb):
                 if self._stopped:
-                    await _anext(s._conn[0], None)
+                    await s._conn[0]()
                     return
                 if exc_type is not None:
-                    await _anext(s._conn[0], None)
-                    s._conn = self._new_conn()
+                    await s._conn[0]()
+                    s._conn = await self._new_conn()
                 self._free_conns.put_nowait(s._conn)
         return PoolBorrow()
 
