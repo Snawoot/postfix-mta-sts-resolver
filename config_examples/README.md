@@ -7,6 +7,7 @@ Reference for configuration values:
 * `host`: (str) daemon bind address
 * `port`: (int) daemon bind port
 * `reuse_port`: (bool) allow multiple instances to share same port (available on Unix, Windows)
+* `cache_grace`: (float) age of cache entries in seconds which do not require policy refresh and update. Default: 60
 * `cache`:
   * `type`: (str: `internal`|`sqlite`|`redis`) cache backend type
   * `options`:
