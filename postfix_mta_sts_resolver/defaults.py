@@ -13,3 +13,4 @@ SQLITE_THREADS = cpu_count()
 SQLITE_TIMEOUT = 5
 REDIS_TIMEOUT = 5
 CACHE_GRACE = 60
+USER_AGENT = "postfix-mta-sts-resolver"
