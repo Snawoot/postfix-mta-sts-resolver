@@ -5,7 +5,7 @@ Daemon which provides TLS client policy for Postfix via socketmap, according to 
 
 * Proactive policy fetch
 * Fetch error reporting
-* Fetch ratelimit
+* Fetch ratelimit (but actual fetch rate partially restricted with `cache_grace` config option).
 
 Server has configurable cache backend which allows to store cached STS policies in memory (`internal`), file (`sqlite`) or in Redis database (`redis`).
 
