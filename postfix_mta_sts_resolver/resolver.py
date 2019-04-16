@@ -28,6 +28,8 @@ class STSResolver(object):
         self._http_timeout = aiohttp.ClientTimeout(total=timeout)
         self._proxy_info = aiohttp.helpers.proxies_from_env().get('https',
                                                                   None)
+        self._headers = {}
+        
         if self._proxy_info is None:
             self._proxy = None
             self._proxy_auth = None
@@ -86,6 +88,9 @@ class STSResolver(object):
                           domain +
                           '/.well-known/mta-sts.txt')
 
+        # Construct headers for MTA-STS policy fetch
+        self._headers["User-Agent"] = defaults.USER_AGENT
+        
         # Fetch actual policy
         try:
             async with aiohttp.ClientSession(loop=self._loop,
@@ -93,7 +98,7 @@ class STSResolver(object):
                                                  as session:
                 async with session.get(sts_policy_url,
                                        allow_redirects=False,
-                                       proxy=self._proxy,
+                                       proxy=self._proxy, headers=self._headers,
                                        proxy_auth=self._proxy_auth) as resp:
                     if resp.status != 200:
                         raise BadSTSPolicy()
