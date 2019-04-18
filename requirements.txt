@@ -1,5 +1,0 @@
-pynetstring>=0.1.dev2
-aiodns>=1.1.1
-aiohttp>=1.2.0
-PyYAML>=3.12
-uvloop>=0.11.0
