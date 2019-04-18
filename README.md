@@ -13,7 +13,7 @@ Server has configurable cache backend which allows to store cached STS policies 
 ## Requirements
 
 * Postfix 2.10 and later
-* Python 3.5.3+ (see ["Systems without Python 3.5+"](#systems-without-python-35) below if you haven't one)
+* Python 3.5.3+ (see ["Systems without Python 3.5+"](#systems-without-python-35) below if you haven't one, or use Docker installation method)
 * aiodns
 * aiohttp
 * aiosqlite
@@ -37,6 +37,9 @@ sudo python3 -m pip install postfix-mta-sts-resolver
 
 Package scripts shall be available in standard executable locations upon completion.
 
+#### pip user install
+
+All pip invocations can be run with `--user` option of `pip` installer. In this case superuser privileges are not required and package(s) are getting installed into user home directory. Usually, script executables will appear in `~/.local/bin`.
 
 ### Method 2. System-wide install from project source
 
@@ -53,18 +56,22 @@ Package scripts shall be available in standard executable locations upon complet
 
 See ["Building virtualenv"](#building-virtualenv)
 
+### Method 4. Docker
+
+Run
+
+```bash
+docker volume create mta-sts-cache
+docker run -dit -v mta-sts-cache:/var/lib/mta-sts -p 127.0.0.1:8461:8461 --restart unless-stopped yarmak/postfix-mta-sts-resolver
+```
+
+Daemon will be up and running, listening on local interface on port 8461. Default configuration baked into docker image uses SQLite for cache stored in persistent docker volume. You may override this configuration with your own config file by mapping it into container with option `-v my_config.yml:/etc/mta-sta-daemon.yml`.
 
 ### Common installation notes
 
 See also [contrib/README.md](contrib/README.md) for RHEL/OEL/Centos and FreeBSD notes.
 
 See [contrib/postfix-mta-sts.service](contrib/postfix-mta-sts.service) for example of systemd unit file suitable to run daemon under systemd control.
-
-
-#### pip user install
-
-All pip invocations can be run with `--user` option of `pip` installer. In this case superuser privileges are not required and package(s) are getting installed into user home directory. Usually, script executables will appear in `~/.local/bin`.
-
 
 ## Running
 
