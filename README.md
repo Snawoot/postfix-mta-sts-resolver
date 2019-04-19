@@ -62,7 +62,12 @@ Run
 
 ```bash
 docker volume create mta-sts-cache
-docker run -dit -v mta-sts-cache:/var/lib/mta-sts -p 127.0.0.1:8461:8461 --restart unless-stopped yarmak/postfix-mta-sts-resolver
+docker run -dit \
+    -v mta-sts-cache:/var/lib/mta-sts \
+    -p 127.0.0.1:8461:8461 \
+    --restart unless-stopped \
+    --name postfix-mta-sts-resolver \
+    yarmak/postfix-mta-sts-resolver
 ```
 
 Daemon will be up and running, listening on local interface on port 8461. Default configuration baked into docker image uses SQLite for cache stored in persistent docker volume. You may override this configuration with your own config file by mapping it into container with option `-v my_config.yml:/etc/mta-sta-daemon.yml`.
