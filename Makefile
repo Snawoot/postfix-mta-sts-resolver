@@ -1,6 +1,7 @@
 PYTHON = python3
 RM = rm
 PKG_NAME = postfix_mta_sts_resolver
+ARCH_NAME = postfix-mta-sts-resolver
 
 PRJ_DIR = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 VENV ?= $(PRJ_DIR)venv
@@ -40,4 +41,7 @@ upload: pkg version
 testupload: pkg version
 	$(PKGVENV)/bin/python -m twine upload --repository-url https://test.pypi.org/legacy/ dist/$(PKG_NAME)-$(PKG_VERSION)*
 
-.PHONY: install clean uninstall pkg version
+archive: version
+	git archive --prefix=$(ARCH_NAME)-$(PKG_VERSION)/ -o ../$(ARCH_NAME)-$(PKG_VERSION).tar.gz v$(PKG_VERSION)
+
+.PHONY: install clean uninstall pkg version archive
