@@ -115,17 +115,17 @@ Synopsis:
 ```
 $ mta-sts-daemon --help
 usage: mta-sts-daemon [-h] [-v {debug,info,warn,error,fatal}] [-c FILE]
-                      [--disable-uvloop]
+                      [-l FILE] [--disable-uvloop]
 
 optional arguments:
   -h, --help            show this help message and exit
   -v {debug,info,warn,error,fatal}, --verbosity {debug,info,warn,error,fatal}
                         logging verbosity (default: info)
   -c FILE, --config FILE
-                        config file location (default: /etc/postfix/mta-sts-
+                        config file location (default: /etc/mta-sts-
                         daemon.yml)
   -l FILE, --logfile FILE
-                        log file location (default: None)                     
+                        log file location (default: None)
   --disable-uvloop      do not use uvloop even if it is available (default:
                         False)
 ```
