@@ -8,4 +8,4 @@ COPY docker-config.yml /etc/mta-sts-daemon.yml
 
 VOLUME [ "/var/lib/mta-sts" ]
 EXPOSE 8461/tcp
-ENTRYPOINT [ "mta-sts-daemon", "-c", "/etc/mta-sts-daemon.yml" ]
+ENTRYPOINT [ "mta-sts-daemon" ]
