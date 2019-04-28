@@ -1,0 +1,81 @@
+= mta-sts-daemon.yml(5)
+:doctype: manpage
+:manmanual: mta-sts-daemon.yml
+:mansource: postfix-mta-sts-resolver
+
+== Name
+
+mta-sts-daemon.yml - configuration file for mta-sts-daemon
+
+== Description
+
+This configuration file configures the listening socket, caching behaviour,
+and manipulation of MTA-STS mode.
+
+== Syntax
+
+The file is in YAML syntax with the following elements:
+
+*host*: (_str_) daemon bind address
+
+*port*: (_int_) daemon bind port
+
+*reuse_port*: (_bool_) allow multiple instances to share same port (available on Unix, Windows)
+
+*cache_grace*: (_float_) age of cache entries in seconds which do not require policy refresh and update. Default: 60
+
+*cache*::
+
+* *type*: (_str_: _internal_|_sqlite_|_redis_) cache backend type
+* *options*:
+ ** Options for _internal_ type:
+  *** *cache_size*: (_int_) number of cache entries to store in memory
+ ** Options for _sqlite_ type:
+  *** *filename*: (_str_) path to database file
+  *** *threads*: (_int_) number of threads in pool for SQLite connections
+  *** *timeout*: (_float_) timeout in seconds for acquiring connection from pool or DB lock
+ ** Options for _redis_ type:
+  *** All parameters are passed to `aioredis.create_redis_pool` [0]. Check there for a parameter reference.
+
+*default_zone*::
+
+* *strict_testing*: (_bool_) enforce policy for testing domains
+* *timeout*: (_int_) network operations timeout for resolver in that zone
+
+*zones*::
+
+* *ZONENAME*:
+ ** Same as options in _default_zone_
+
+The timeout is used for the DNS and HTTP requests.
+
+MTA-STS "testing" mode can be interpreted as "strict" mode.  This may be
+useful (though noncompliant) in the beginning of MTA-STS deployment, when many
+domains operate under "testing" mode. 
+
+== Example
+
+ host: 127.0.0.1
+ port: 8461
+ reuse_port: true
+ shutdown_timeout: 20
+ cache:
+   type: internal
+   options:
+     cache_size: 10000
+ default_zone:
+   strict_testing: false
+   timeout: 4
+ zones:
+   myzone:
+     strict_testing: false
+     timeout: 4
+
+== See also
+
+*mta-sts-daemon*(1), *mta-sts-query*(1)
+
+== Notes
+
+0.::
+  https://aioredis.readthedocs.io/en/latest/api_reference.html#aioredis.create_redis_pool

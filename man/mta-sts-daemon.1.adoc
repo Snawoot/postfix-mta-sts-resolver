@@ -1,0 +1,60 @@
+= mta-sts-daemon(1)
+:doctype: manpage
+:manmanual: mta-sts-daemon
+:mansource: postfix-mta-sts-resolver
+
+== Name
+
+mta-sts-daemon - provide MTA-STS policy to Postfix as policy map
+
+== Synopsis
+
+*mta-sts-daemon* [_OPTION_]...
+
+== Description
+
+This daemon opens a socket where Postfix can query and retrieve the MTA-STS
+policy for a domain.  The configuration file is described in
+*mta-sts-daemon.yml*(5).
+
+MTA-STS, specified in RFC 8461 [0], is a security standard for email servers.
+When a site configures MTA-STS, other mail servers can require the
+successful authentication of that site when forwarding mail there.
+
+== Options
+
+*-h, --help*::
+  show a help message and exit
+
+*-v, --verbosity* _VERBOSITY_::
+  set log verbosity level: _debug_, _info_ (default), _warn_, _error_, or
+  _fatal_.
+
+*-c, --config* _FILE_::
+  config file location (default: _/etc/postfix/mta-sts-daemon.yml_)
+
+*-l, --logfile* _FILE_::
+  log file location (default: _none_)
+
+*--disable-uvloop*::
+  do not use uvloop even if it is available (default: enabled if available)
+
+== Examples
+
+Configure Postfix in _/etc/postfix/main.cf_:
+
+ smtp_tls_policy_maps = socketmap:inet:127.0.0.1:8461:postfix
+ smtp_tls_CApath = /etc/ssl/certs/
+
+Reload Postfix.  Then verify it works:
+
+*/usr/sbin/postmap -q dismail.de socketmap:inet:127.0.0.1:8461:postfix*
+
+== See also
+
+*mta-sts-query*(1), *mta-sts-daemon.yml*(5)
+
+== Notes
+
+0.::
+  *SMTP MTA Strict Transport Security (MTA-STS)*: https://tools.ietf.org/html/rfc8461
