@@ -74,9 +74,9 @@ Daemon will be up and running, listening on local interface on port 8461. Defaul
 
 ### Common installation notes
 
-See also [contrib/README.md](contrib/README.md) for RHEL/OEL/Centos and FreeBSD notes.
+See also [contrib/README.md](https://github.com/Snawoot/postfix-mta-sts-resolver/tree/master/contrib/README.md) for RHEL/OEL/Centos and FreeBSD notes.
 
-See [contrib/postfix-mta-sts.service](contrib/postfix-mta-sts.service) for example of systemd unit file suitable to run daemon under systemd control.
+See [contrib/](https://github.com/Snawoot/postfix-mta-sts-resolver/tree/master/contrib) for example of systemd unit file suitable to run daemon under systemd control.
 
 ## Running
 
@@ -108,7 +108,7 @@ optional arguments:
 
 `mta-sts-daemon` is a daemon which provides external [TLS policy for Postfix SMTP client](http://www.postfix.org/TLS_README.html#client_tls_policy) via [socketmap interface](http://www.postfix.org/socketmap_table.5.html).
 
-You may find useful systemd unit file to run daemon in [contrib/postfix-mta-sts.service](contrib/postfix-mta-sts.service).
+You may find useful systemd unit file to run daemon in [contrib/](https://github.com/Snawoot/postfix-mta-sts-resolver/tree/master/contrib).
 
 Synopsis:
 
@@ -139,7 +139,7 @@ Also on Linux and FreeBSD, load distribited across all processes (with SO\_REUSE
 
 ## MTA-STS Daemon configuration
 
-See [config\_examples/](config_examples/) directory. Default config location is: `/etc/postfix/mta-sts-daemon.yml`, but it can be overriden with command line option `-c FILE`.
+See [configuration man page](https://github.com/Snawoot/postfix-mta-sts-resolver/blob/master/man/mta-sts-daemon.yml.5.adoc) and [config\_examples/](https://github.com/Snawoot/postfix-mta-sts-resolver/tree/master/config_examples) directory. Default config location is: `/etc/postfix/mta-sts-daemon.yml`, but it can be overriden with command line option `-c FILE`.
 
 All options is self-explanatory, only exception is `strict_testing` option. If set to `true`, STS policy will be enforced even if domain announces `testing` MTA-STS mode. Useful for premature incorporation of MTA-STS against domains hesistating to go `enforce`. Please use with caution.
 
