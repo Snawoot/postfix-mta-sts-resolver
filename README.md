@@ -115,17 +115,17 @@ Synopsis:
 ```
 $ mta-sts-daemon --help
 usage: mta-sts-daemon [-h] [-v {debug,info,warn,error,fatal}] [-c FILE]
-                      [--disable-uvloop]
+                      [-l FILE] [--disable-uvloop]
 
 optional arguments:
   -h, --help            show this help message and exit
   -v {debug,info,warn,error,fatal}, --verbosity {debug,info,warn,error,fatal}
                         logging verbosity (default: info)
   -c FILE, --config FILE
-                        config file location (default: /etc/postfix/mta-sts-
+                        config file location (default: /etc/mta-sts-
                         daemon.yml)
   -l FILE, --logfile FILE
-                        log file location (default: None)                     
+                        log file location (default: None)
   --disable-uvloop      do not use uvloop even if it is available (default:
                         False)
 ```
@@ -139,7 +139,7 @@ Also on Linux and FreeBSD, load distribited across all processes (with SO\_REUSE
 
 ## MTA-STS Daemon configuration
 
-See [configuration man page](https://github.com/Snawoot/postfix-mta-sts-resolver/blob/master/man/mta-sts-daemon.yml.5.adoc) and [config\_examples/](https://github.com/Snawoot/postfix-mta-sts-resolver/tree/master/config_examples) directory. Default config location is: `/etc/postfix/mta-sts-daemon.yml`, but it can be overriden with command line option `-c FILE`.
+See [configuration man page](https://github.com/Snawoot/postfix-mta-sts-resolver/blob/master/man/mta-sts-daemon.yml.5.adoc) and [config\_examples/](https://github.com/Snawoot/postfix-mta-sts-resolver/tree/master/config_examples) directory. Default config location is: `/etc/mta-sts-daemon.yml`, but it can be overriden with command line option `-c FILE`.
 
 All options is self-explanatory, only exception is `strict_testing` option. If set to `true`, STS policy will be enforced even if domain announces `testing` MTA-STS mode. Useful for premature incorporation of MTA-STS against domains hesistating to go `enforce`. Please use with caution.
 

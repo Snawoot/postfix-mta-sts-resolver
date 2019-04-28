@@ -31,7 +31,7 @@ successful authentication of that site when forwarding mail there.
   _fatal_.
 
 *-c, --config* _FILE_::
-  config file location (default: _/etc/postfix/mta-sts-daemon.yml_)
+  config file location (default: _/etc/mta-sts-daemon.yml_)
 
 *-l, --logfile* _FILE_::
   log file location (default: _none_)
