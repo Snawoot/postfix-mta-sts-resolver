@@ -74,9 +74,9 @@ Daemon will be up and running, listening on local interface on port 8461. Defaul
 
 ### Common installation notes
 
-See also [contrib/README.md](contrib/README.md) for RHEL/OEL/Centos and FreeBSD notes.
+See also [contrib/README.md](https://github.com/Snawoot/postfix-mta-sts-resolver/tree/master/contrib/README.md) for RHEL/OEL/Centos and FreeBSD notes.
 
-See [contrib/postfix-mta-sts.service](contrib/postfix-mta-sts.service) for example of systemd unit file suitable to run daemon under systemd control.
+See [contrib/](https://github.com/Snawoot/postfix-mta-sts-resolver/tree/master/contrib) for example of systemd unit file suitable to run daemon under systemd control.
 
 ## Running
 
@@ -108,7 +108,7 @@ optional arguments:
 
 `mta-sts-daemon` is a daemon which provides external [TLS policy for Postfix SMTP client](http://www.postfix.org/TLS_README.html#client_tls_policy) via [socketmap interface](http://www.postfix.org/socketmap_table.5.html).
 
-You may find useful systemd unit file to run daemon in [contrib/postfix-mta-sts.service](contrib/postfix-mta-sts.service).
+You may find useful systemd unit file to run daemon in [contrib/](https://github.com/Snawoot/postfix-mta-sts-resolver/tree/master/contrib).
 
 Synopsis:
 
