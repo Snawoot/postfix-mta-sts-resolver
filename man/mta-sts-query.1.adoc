@@ -1,0 +1,50 @@
+= mta-sts-query(1)
+:doctype: manpage
+:manmanual: mta-sts-query
+:mansource: postfix-mta-sts-resolver
+
+== Name
+
+mta-sts-query - retrieve MTA-STS policy of a domain
+
+== Synopsis
+
+*mta-sts-query* [_OPTION_]... _DOMAIN_ [_KNOWN_VERSION_]
+
+== Description
+
+Retrieve the MTA-STS policy of a domain and display the result on standard
+output.  This diagnostic utility is also useful without Postfix.
+
+MTA-STS, specified in RFC 8461 [0], is a security standard for email servers.
+When a site configures MTA-STS, other mail servers can require the
+successful authentication of that site when forwarding mail there.
+
+== Options
+
+*-h, --help*::
+  show a help message and exit
+
+*-v, --verbosity* _VERBOSITY_::
+  set verbosity level: _debug_, _info_, _warn_ (default), _error_, or _fatal_.
+
+*DOMAIN*::
+  domain for which to retrieve the MTA-STS policy
+
+*KNOWN_VERSION*::
+  latest known version (default: None)
+
+== Examples
+
+Retrieve MTA-STS policy for dismail.de:
+
+*mta-sts-query dismail.de*
+
+== See also
+
+*mta-sts-daemon*(1), *mta-sts-daemon.yml*(5)
+
+== Notes
+
+0.::
+  *SMTP MTA Strict Transport Security (MTA-STS)*: https://tools.ietf.org/html/rfc8461

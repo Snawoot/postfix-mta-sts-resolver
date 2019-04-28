@@ -2,6 +2,7 @@ PYTHON = python3
 RM = rm
 PKG_NAME = postfix_mta_sts_resolver
 ARCH_NAME = postfix-mta-sts-resolver
+MANPAGES = $(patsubst %.adoc,%,$(wildcard man/*.adoc))
 
 PRJ_DIR = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 VENV ?= $(PRJ_DIR)venv
@@ -17,8 +18,13 @@ $(VENV):
 uninstall: $(VENV)
 	$(VENV)/bin/python -m pip uninstall -y $(PKG_NAME)
 
+man/%:
+	asciidoctor --backend=manpage $@.adoc
+
+doc: $(MANPAGES)
+
 clean:
-	$(RM) -rf $(VENV) $(PKGVENV) dist/ build/ $(PKG_NAME).egg-info/
+	$(RM) -rf $(VENV) $(PKGVENV) dist/ build/ $(PKG_NAME).egg-info/ man/*.?
 
 $(PKGVENV):
 	$(PYTHON) -m venv $(PKGVENV)
