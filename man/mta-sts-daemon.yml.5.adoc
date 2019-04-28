@@ -24,6 +24,8 @@ The file is in YAML syntax with the following elements:
 
 *cache_grace*: (_float_) age of cache entries in seconds which do not require policy refresh and update. Default: 60
 
+*shutdown_timeout*: (_float_) time limit granted to existing client sessions for finishing when server stops. Default: 20
+
 *cache*::
 
 * *type*: (_str_: _internal_|_sqlite_|_redis_) cache backend type
