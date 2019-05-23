@@ -22,10 +22,12 @@ setup(name='postfix_mta_sts_resolver',
           'aiodns>=1.1.1',
           'aiohttp>=3.4.4',
           'PyYAML>=3.12',
-          'aiosqlite>=0.10.0',
-          'aioredis>=1.2.0',
           'sdnotify>=0.3.2',
       ],
+      extras_require={
+          'sqlite': 'aiosqlite>=0.10.0',
+          'redis': 'aioredis>=1.2.0',
+      },
       entry_points={
           'console_scripts': [
               'mta-sts-daemon=postfix_mta_sts_resolver.daemon:main',
