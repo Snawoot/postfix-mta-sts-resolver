@@ -32,8 +32,10 @@ All dependency packages installed automatically if this package is installed via
 Run:
 
 ```bash
-sudo python3 -m pip install postfix-mta-sts-resolver
+sudo python3 -m pip install postfix-mta-sts-resolver[redis,sqlite]
 ```
+
+If you don't need `redis` or `sqlite` support, you may omit one of them in square brackets. If you don't need any of them and you plan to use internal cache without persistence, you should also omit square brackets.
 
 Package scripts shall be available in standard executable locations upon completion.
 
@@ -46,8 +48,10 @@ All pip invocations can be run with `--user` option of `pip` installer. In this 
 Run in project directory:
 
 ```bash
-sudo python3 -m pip install .
+sudo python3 -m pip install .[redis,sqlite]
 ```
+
+If you don't need `redis` or `sqlite` support, you may omit one of them in square brackets. If you don't need any of them and you plan to use internal cache without persistence, you should also omit square brackets.
 
 Package scripts shall be available in standard executable locations upon completion.
 
@@ -190,7 +194,7 @@ Some people may find convenient to install latest python from source into `/opt`
 Python binaries will be available in `/opt/bin`, including `pip3`. You may install `postfix-mta-sts-resolver` using `/opt/bin/pip3` without interference with any system packages:
 
 ```bash
-sudo /opt/bin/pip3 install postfix-mta-sts-resolver
+sudo /opt/bin/pip3 install postfix-mta-sts-resolver[sqlite,redis]
 ```
 
 Executable files of `postfix-mta-sts-resolver` will be available in `/opt/bin/mta-sts-query` and `/opt/bin/mta-sts-daemon`
