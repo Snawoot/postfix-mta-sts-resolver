@@ -1,13 +1,15 @@
+from os import path
+
 from setuptools import setup
 
-from os import path
-this_directory = path.abspath(path.dirname(__file__))
+this_directory = path.abspath(path.dirname(__file__))  # pylint: disable=invalid-name
 with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
-    long_description = f.read()
+    long_description = f.read()  # pylint: disable=invalid-name
 
 setup(name='postfix_mta_sts_resolver',
       version='0.5.0',
-      description='Daemon which provides TLS client policy for Postfix via socketmap, according to domain MTA-STS policy',
+      description='Daemon which provides TLS client policy for Postfix '
+                  'via socketmap, according to domain MTA-STS policy',
       url='https://github.com/Snawoot/postfix-mta-sts-resolver',
       author='Vladislav Yarmak',
       author_email='vladislav-ex-src@vm-0.com',
@@ -46,6 +48,6 @@ setup(name='postfix_mta_sts_resolver',
           "Topic :: Internet",
           "Topic :: Security",
       ],
-	  long_description=long_description,
+      long_description=long_description,
       long_description_content_type='text/markdown',
       zip_safe=True)

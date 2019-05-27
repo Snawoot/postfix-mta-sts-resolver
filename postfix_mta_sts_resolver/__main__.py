@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import sys
 import argparse
 import asyncio
 
@@ -27,11 +26,10 @@ def parse_args():
 
 def main():
     args = parse_args()
-    mainLogger = utils.setup_logger('MAIN', args.verbosity)
 
     loop = asyncio.get_event_loop()
-    R = STSResolver(loop=loop)
-    result = loop.run_until_complete(R.resolve(args.domain, args.known_version))
+    resolver = STSResolver(loop=loop)
+    result = loop.run_until_complete(resolver.resolve(args.domain, args.known_version))
     print(result)
 
 
