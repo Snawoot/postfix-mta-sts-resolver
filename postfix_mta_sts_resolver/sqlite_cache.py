@@ -1,19 +1,21 @@
+# pylint: disable=invalid-name,protected-access
+
 import asyncio
-import aiosqlite
 import sqlite3
 import json
 import logging
-from functools import partial
+
+import aiosqlite
 
 from .defaults import SQLITE_THREADS, SQLITE_TIMEOUT
 from .base_cache import BaseCache, CacheEntry
 
 
 class SqliteConnPool:
-    def __init__(self, threads, conn_args=(), conn_kwargs={}, init_queries=()):
+    def __init__(self, threads, conn_args=(), conn_kwargs=None, init_queries=()):
         self._threads = threads
         self._conn_args = conn_args
-        self._conn_kwargs = conn_kwargs
+        self._conn_kwargs = conn_kwargs if conn_kwargs is not None else {}
         self._init_queries = init_queries
         self._free_conns = asyncio.Queue()
         self._ready = False
@@ -49,11 +51,17 @@ class SqliteConnPool:
         if not self._ready:
             raise RuntimeError("Pool not prepared!")
         class PoolBorrow:
+            # pylint: disable=no-self-argument
+            def __init__(s):
+                s._conn = None
+
+            # pylint: disable=no-self-argument
             async def __aenter__(s):
                 s._conn = await asyncio.wait_for(self._free_conns.get(),
                                                  timeout)
                 return s._conn
 
+            # pylint: disable=no-self-argument
             async def __aexit__(s, exc_type, exc, tb):
                 if self._stopped:
                     await s._conn.close()
@@ -74,6 +82,7 @@ class SqliteCache(BaseCache):
         sqlitelogger = logging.getLogger("aiosqlite")
         if not sqlitelogger.hasHandlers():
             sqlitelogger.addHandler(logging.NullHandler())
+        self._pool = None
 
     async def setup(self):
         conn_init = [
@@ -88,7 +97,8 @@ class SqliteCache(BaseCache):
                                     init_queries=conn_init)
         await self._pool.prepare()
         queries = [
-            "create table if not exists sts_policy_cache (domain text, ts integer, pol_id text, pol_body text)",
+            "create table if not exists sts_policy_cache "
+            "(domain text, ts integer, pol_id text, pol_body text)",
             "create unique index if not exists sts_policy_domain on sts_policy_cache (domain)",
             "create index if not exists sts_policy_domain_ts on sts_policy_cache (domain, ts)",
         ]
