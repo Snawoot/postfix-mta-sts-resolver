@@ -1,12 +1,12 @@
-import asyncio
-import aiodns
-import aiohttp
 import enum
 from io import BytesIO
 
+import aiodns
+import aiohttp
+
 from . import defaults
-from .utils import *
-from .constants import *
+from .utils import parse_mta_sts_record, parse_mta_sts_policy, is_plaintext, filter_text
+from .constants import HARD_RESP_LIMIT, CHUNK
 
 
 class BadSTSPolicy(Exception):
@@ -20,16 +20,18 @@ class STSFetchResult(enum.Enum):
     NOT_CHANGED = 3
 
 
-class STSResolver(object):
+_HEADERS = {"User-Agent": defaults.USER_AGENT}
+
+
+# pylint: disable=too-few-public-methods
+class STSResolver:
     def __init__(self, *, timeout=defaults.TIMEOUT, loop):
         self._loop = loop
         self._timeout = timeout
         self._resolver = aiodns.DNSResolver(timeout=timeout, loop=loop)
         self._http_timeout = aiohttp.ClientTimeout(total=timeout)
-        self._proxy_info = aiohttp.helpers.proxies_from_env().get('https',
-                                                                  None)
-        self._headers = {}
-        
+        self._proxy_info = aiohttp.helpers.proxies_from_env().get('https', None)
+
         if self._proxy_info is None:
             self._proxy = None
             self._proxy_auth = None
@@ -37,6 +39,7 @@ class STSResolver(object):
             self._proxy = self._proxy_info.proxy
             self._proxy_auth = self._proxy_info.proxy_auth
 
+    # pylint: disable=too-many-locals,too-many-branches,too-many-return-statements
     async def resolve(self, domain, last_known_id=None):
         if domain.startswith('.'):
             return STSFetchResult.NONE, None
@@ -49,15 +52,15 @@ class STSResolver(object):
         # Try to fetch it
         try:
             txt_records = await self._resolver.query(sts_txt_domain, 'TXT')
-        except aiodns.error.DNSError as e:
-            if e.args[0] == aiodns.error.ARES_ETIMEOUT:
+        except aiodns.error.DNSError as error:
+            if error.args[0] == aiodns.error.ARES_ETIMEOUT:  # pylint: disable=no-else-return
                 # It's hard to decide what to do in case of timeout
                 # Probably it's better to threat this as fetch error
                 # so caller probably shall report such cases.
                 return STSFetchResult.FETCH_ERROR, None
-            elif e.args[0] == aiodns.error.ARES_ENOTFOUND:
+            elif error.args[0] == aiodns.error.ARES_ENOTFOUND:
                 return STSFetchResult.NONE, None
-            elif e.args[0] == aiodns.error.ARES_ENODATA:
+            elif error.args[0] == aiodns.error.ARES_ENODATA:
                 return STSFetchResult.NONE, None
             else:
                 return STSFetchResult.NONE, None
@@ -88,9 +91,6 @@ class STSResolver(object):
                           domain +
                           '/.well-known/mta-sts.txt')
 
-        # Construct headers for MTA-STS policy fetch
-        self._headers["User-Agent"] = defaults.USER_AGENT
-        
         # Fetch actual policy
         try:
             async with aiohttp.ClientSession(loop=self._loop,
@@ -98,7 +98,7 @@ class STSResolver(object):
                                                  as session:
                 async with session.get(sts_policy_url,
                                        allow_redirects=False,
-                                       proxy=self._proxy, headers=self._headers,
+                                       proxy=self._proxy, headers=_HEADERS,
                                        proxy_auth=self._proxy_auth) as resp:
                     if resp.status != 200:
                         raise BadSTSPolicy()
@@ -118,7 +118,7 @@ class STSResolver(object):
                     charset = (resp.charset if resp.charset is not None
                                else 'ascii')
                     policy_text = policy_file.getvalue().decode(charset)
-        except:
+        except Exception:
             return STSFetchResult.FETCH_ERROR, None
 
         # Parse policy
@@ -131,10 +131,10 @@ class STSResolver(object):
         try:
             max_age = int(pol.get('max_age', '-1'))
             pol['max_age'] = max_age
-        except:
+        except ValueError:
             return STSFetchResult.FETCH_ERROR, None
 
-        if not (0 <= max_age <= 31557600):
+        if not 0 <= max_age <= 31557600:
             return STSFetchResult.FETCH_ERROR, None
 
         if 'mode' not in pol:
