@@ -1,5 +1,4 @@
 import asyncio
-import pynetstring
 import logging
 import time
 import collections
@@ -8,16 +7,19 @@ import os
 import socket
 from functools import partial
 
-from .resolver import *
-from .constants import *
-from .utils import create_custom_socket
+import pynetstring
+
+from .resolver import STSResolver, STSFetchResult
+from .constants import QUEUE_LIMIT, CHUNK
+from .utils import create_custom_socket, create_cache
 from .base_cache import CacheEntry
 
 
 ZoneEntry = collections.namedtuple('ZoneEntry', ('strict', 'resolver'))
 
 
-class STSSocketmapResponder(object):
+# pylint: disable=too-many-instance-attributes
+class STSSocketmapResponder:
     def __init__(self, cfg, loop):
         self._logger = logging.getLogger("STS")
         self._loop = loop
@@ -41,22 +43,19 @@ class STSSocketmapResponder(object):
         self._cache = create_cache(cfg["cache"]["type"],
                                    cfg["cache"]["options"])
         self._children = set()
+        self._server = None
 
     async def start(self):
         def _spawn(reader, writer):
             def done_cb(task, fut):
                 self._children.discard(task)
-            t = self._loop.create_task(self.handler(reader, writer))
-            t.add_done_callback(partial(done_cb, t))
-            self._children.add(t)
+            task = self._loop.create_task(self.handler(reader, writer))
+            task.add_done_callback(partial(done_cb, task))
+            self._children.add(task)
             self._logger.debug("len(self._children) = %d", len(self._children))
 
         await self._cache.setup()
 
-        reuse_opts = {
-            'host': self._host,
-            'port': self._port,
-        }
         if self._reuse_port:
             if sys.platform in ('win32', 'cygwin'):
                 opts = {
@@ -122,8 +121,8 @@ class STSSocketmapResponder(object):
                 except asyncio.CancelledError:
                     writer.close()
                     return
-                except Exception as e:
-                    self._logger.exception("Unhandled exception from future: %s", e)
+                except Exception as exc:
+                    self._logger.exception("Unhandled exception from future: %s", exc)
                     writer.close()
                     return
                 self._logger.debug("Future await complete: data=%s", repr(data))
@@ -133,21 +132,22 @@ class STSSocketmapResponder(object):
         except asyncio.CancelledError:
             try:
                 fut.cancel()
-            except:
+            except Exception:
                 pass
             while not queue.empty():
                 task = queue.get_nowait()
                 task.cancel()
 
+    # pylint: disable=too-many-locals,too-many-branches,too-many-statements
     async def process_request(self, raw_req):
         # Update local cache
         async def cache_set(domain, entry):
             try:
                 await self._cache.set(domain, entry)
-            except asyncio.CancelledError:
+            except asyncio.CancelledError:  # pylint: disable=try-except-raise
                 raise
-            except Exception as e:
-                self._logger.exception("Cache set failed: %s", str(e))
+            except Exception as exc:
+                self._logger.exception("Cache set failed: %s", str(exc))
 
         have_policy = True
 
@@ -173,18 +173,18 @@ class STSSocketmapResponder(object):
         # Lookup for cached policy
         try:
             cached = await self._cache.get(domain)
-        except asyncio.CancelledError:
+        except asyncio.CancelledError:  # pylint: disable=try-except-raise
             raise
-        except Exception as e:
-            self._logger.exception("Cache get failed: %s", str(e))
+        except Exception as exc:
+            self._logger.exception("Cache get failed: %s", str(exc))
             cached = None
 
-        ts = time.time()
+        ts = time.time()  # pylint: disable=invalid-name
         # Check if cached record exists and recent enough to omit
         # DNS lookup and cache update
         if cached is None or ts - cached.ts > self._grace:
             self._logger.debug("Lookup PERFORMED: domain = %s", domain)
-            # Check if newer policy exists or 
+            # Check if newer policy exists or
             # retrieve policy from scratch if there is no cached one
             latest_pol_id = None if cached is None else cached.pol_id
             status, policy = await zone_cfg.resolver.resolve(domain, latest_pol_id)
@@ -209,6 +209,7 @@ class STSSocketmapResponder(object):
 
         if have_policy:
             mode = cached.pol_body['mode']
+            # pylint: disable=no-else-return
             if mode == 'none' or (mode == 'testing' and not zone_cfg.strict):
                 return pynetstring.encode('NOTFOUND ')
             else:
@@ -221,7 +222,7 @@ class STSSocketmapResponder(object):
 
     async def handler(self, reader, writer):
         # Construct netstring parser
-        self._decoder = pynetstring.Decoder()
+        decoder = pynetstring.Decoder()
 
         # Construct queue for responses ordering
         queue = asyncio.Queue(QUEUE_LIMIT, loop=self._loop)
@@ -251,7 +252,7 @@ class STSSocketmapResponder(object):
                     raise EndOfStream()
                 self._logger.debug("Read: %s", repr(part))
                 try:
-                    requests = self._decoder.feed(part)
+                    requests = decoder.feed(part)
                 except:
                     raise ParserInvokationError("Bad netstring protocol.")
 
@@ -266,21 +267,21 @@ class STSSocketmapResponder(object):
         except (EndOfStream, ConnectionError, TimeoutError):
             self._logger.debug("Client disconnected")
             await finalize()
-        except OSError as e:
-            if e.errno == 107:
+        except OSError as exc:
+            if exc.errno == 107:
                 self._logger.debug("Client disconnected")
                 await finalize()
             else:
-                self._logger.exception("Unhandled exception: %s", e)
+                self._logger.exception("Unhandled exception: %s", exc)
                 await finalize()
         except asyncio.CancelledError:
             sender.cancel()
             raise
-        except Exception as e:
-            self._logger.exception("Unhandled exception: %s", e)
+        except Exception as exc:
+            self._logger.exception("Unhandled exception: %s", exc)
             await finalize()
         finally:
             try:
                 writer.close()
-            except:
+            except Exception:
                 pass
