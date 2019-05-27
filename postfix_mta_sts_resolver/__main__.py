@@ -9,11 +9,6 @@ from .resolver import STSResolver
 def parse_args():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("-v", "--verbosity",
-                        help="logging verbosity",
-                        type=utils.LogLevel.__getitem__,
-                        choices=list(utils.LogLevel),
-                        default=utils.LogLevel.warn)
     parser.add_argument("domain",
                         help="domain to fetch MTA-STS policy from")
     parser.add_argument("known_version",
