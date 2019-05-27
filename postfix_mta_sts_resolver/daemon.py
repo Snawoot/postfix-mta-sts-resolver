@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import sys
 import os
 import argparse
 import asyncio
@@ -36,19 +35,19 @@ def parse_args():
     return parser.parse_args()
 
 
-def exit_handler(exit_event, signum, frame):
+def exit_handler(exit_event, signum, frame):  # pylint: disable=unused-argument
     logger = logging.getLogger('MAIN')
     if exit_event.is_set():
         logger.warning("Got second exit signal! Terminating hard.")
-        os._exit(1)
+        os._exit(1)  # pylint: disable=protected-access
     else:
         logger.warning("Got first exit signal! Terminating gracefully.")
         exit_event.set()
 
 
 async def heartbeat():
-    """ Hacky coroutine which keeps event loop spinning with some interval 
-    even if no events are coming. This is required to handle Futures and 
+    """ Hacky coroutine which keeps event loop spinning with some interval
+    even if no events are coming. This is required to handle Futures and
     Events state change when no events are occuring."""
     while True:
         await asyncio.sleep(.5)
@@ -79,25 +78,25 @@ async def amain(cfg, loop):
 def main():
     # Parse command line arguments and setup basic logging
     args = parse_args()
-    mainLogger = utils.setup_logger('MAIN', args.verbosity, args.logfile )
+    logger = utils.setup_logger('MAIN', args.verbosity, args.logfile)
     utils.setup_logger('STS', args.verbosity, args.logfile)
-    mainLogger.info("MTA-STS daemon starting...")
+    logger.info("MTA-STS daemon starting...")
 
     # Read config and populate with defaults
     cfg = utils.load_config(args.config)
 
     # Construct event loop
-    mainLogger.info("Starting eventloop...")
+    logger.info("Starting eventloop...")
     if not args.disable_uvloop:
         if utils.enable_uvloop():
-            mainLogger.info("uvloop enabled.")
+            logger.info("uvloop enabled.")
         else:
-            mainLogger.info("uvloop is not available. "
-                            "Falling back to built-in event loop.")
+            logger.info("uvloop is not available. "
+                        "Falling back to built-in event loop.")
     evloop = asyncio.get_event_loop()
-    mainLogger.info("Eventloop started.")
+    logger.info("Eventloop started.")
 
 
     evloop.run_until_complete(amain(cfg, evloop))
     evloop.close()
-    mainLogger.info("Server finished its work.")
+    logger.info("Server finished its work.")

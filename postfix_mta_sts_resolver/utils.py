@@ -1,8 +1,10 @@
+import argparse
 import enum
 import logging
 import asyncio
-import yaml
 import socket
+
+import yaml
 
 from . import defaults
 
@@ -18,8 +20,8 @@ class LogLevel(enum.IntEnum):
     def __str__(self):
         return self.name
 
-    def __contains__(self, e):
-        return e in self.__members__
+    def __contains__(self, elem):
+        return elem in self.__members__  # pylint: disable=no-member
 
 
 def setup_logger(name, verbosity, logfile=None):
@@ -41,7 +43,7 @@ def setup_logger(name, verbosity, logfile=None):
 
 def check_port(value):
     ivalue = int(value)
-    if not (0 < ivalue < 65536):
+    if not 0 < ivalue < 65536:
         raise argparse.ArgumentTypeError(
             "%s is not a valid port number" % value)
     return ivalue
@@ -59,7 +61,7 @@ def enable_uvloop():
     try:
         import uvloop
         asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-    except:
+    except ImportError:
         return False
     else:
         return True
@@ -85,7 +87,8 @@ def populate_cfg_defaults(cfg):
         if 'options' not in cfg['cache']:
             cfg['cache']['options'] = {}
 
-        cfg['cache']['options']['cache_size'] = cfg['cache']['options'].get('cache_size', defaults.INTERNAL_CACHE_SIZE)
+        cfg['cache']['options']['cache_size'] = cfg['cache']['options'].\
+            get('cache_size', defaults.INTERNAL_CACHE_SIZE)
 
     def populate_zone(zone):
         zone['timeout'] = zone.get('timeout', defaults.TIMEOUT)
@@ -113,9 +116,8 @@ def load_config(filename):
 
 
 def parse_mta_sts_record(rec):
-    d = dict(field.partition('=')[0::2] for field in
-             (field.strip() for field in rec.split(';')) if field)
-    return d
+    return dict(field.partition('=')[0::2] for field in
+                (field.strip() for field in rec.split(';')) if field)
 
 
 def parse_mta_sts_policy(text):
@@ -133,26 +135,26 @@ def parse_mta_sts_policy(text):
     return res
 
 
-def is_plaintext(ct):
-    return ct.lower().partition(';')[0].strip() == 'text/plain'
+def is_plaintext(contenttype):
+    return contenttype.lower().partition(';')[0].strip() == 'text/plain'
 
 
 def filter_text(strings):
-    for S in strings:
-        if isinstance(S, str):
-            yield S
-        elif isinstance(S, bytes):
+    for string in strings:
+        if isinstance(string, str):
+            yield string
+        elif isinstance(string, bytes):
             try:
-                yield S.decode('ascii')
+                yield string.decode('ascii')
             except UnicodeDecodeError:
                 pass
         else:
             raise TypeError('Only bytes or strings are expected.')
 
 
-async def create_custom_socket(host, port, *,
+async def create_custom_socket(host, port, *,  # pylint: disable=too-many-locals
                                family=socket.AF_UNSPEC,
-                               type=socket.SOCK_STREAM,
+                               type=socket.SOCK_STREAM,  # pylint: disable=redefined-builtin
                                flags=socket.AI_PASSIVE,
                                options=None,
                                loop=None):
@@ -160,7 +162,7 @@ async def create_custom_socket(host, port, *,
         loop = asyncio.get_event_loop()
     res = await loop.getaddrinfo(host, port,
                                  family=family, type=type, flags=flags)
-    af, s_typ, proto, cname, sa = res[0]
+    af, s_typ, proto, _, sa = res[0]  # pylint: disable=invalid-name
     sock = socket.socket(af, s_typ, proto)
 
     if options is not None:
@@ -170,14 +172,14 @@ async def create_custom_socket(host, port, *,
     sock.bind(sa)
     return sock
 
-def create_cache(type, options):
-    if type == "internal":
+def create_cache(cache_type, options):
+    if cache_type == "internal":
         from . import internal_cache
         cache = internal_cache.InternalLRUCache(**options)
-    elif type == "sqlite":
+    elif cache_type == "sqlite":
         from . import sqlite_cache
         cache = sqlite_cache.SqliteCache(**options)
-    elif type == "redis":
+    elif cache_type == "redis":
         from . import redis_cache
         cache = redis_cache.RedisCache(**options)
     else:
