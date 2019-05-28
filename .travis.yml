@@ -14,7 +14,9 @@ matrix:
     - python: 3.7
       env: TOXENV=py37
 install:
+  - sudo apt-get update
   - sudo apt-get install redis-server -y
+  - sudo systemctl start redis-server
   - pip install tox
 script:
   - tox
