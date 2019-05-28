@@ -6,28 +6,18 @@ import pynetstring
 import pytest
 
 from postfix_mta_sts_resolver.responder import STSSocketmapResponder
+from async_generator import yield_, async_generator
 
-if sys.hexversion < 0x03060000:
-    from async_generator import yield_, async_generator
-    @pytest.fixture(scope="module")
-    async def responder(event_loop):
-        import postfix_mta_sts_resolver.utils as utils
-        cfg = utils.populate_cfg_defaults(None)
-        resp = STSSocketmapResponder(cfg, event_loop)
-        await resp.start()
-        result = resp, cfg['host'], cfg['port']
-        yield_(result)
-        await resp.stop()
-else:
-    @pytest.fixture(scope="module")
-    async def responder(event_loop):
-        import postfix_mta_sts_resolver.utils as utils
-        cfg = utils.populate_cfg_defaults(None)
-        resp = STSSocketmapResponder(cfg, event_loop)
-        await resp.start()
-        result = resp, cfg['host'], cfg['port']
-        yield result
-        await resp.stop()
+@pytest.fixture(scope="module")
+@async_generator
+async def responder(event_loop):
+    import postfix_mta_sts_resolver.utils as utils
+    cfg = utils.populate_cfg_defaults(None)
+    resp = STSSocketmapResponder(cfg, event_loop)
+    await resp.start()
+    result = resp, cfg['host'], cfg['port']
+    await yield_(result)
+    await resp.stop()
 
 @pytest.fixture(scope="module")
 def event_loop():
