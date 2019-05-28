@@ -48,7 +48,7 @@ class SqliteConnPool:
             pass
 
     def borrow(self, timeout=None):
-        if not self._ready:
+        if not self._ready:  # pragma: no cover
             raise RuntimeError("Pool not prepared!")
         class PoolBorrow:
             # pylint: disable=no-self-argument
