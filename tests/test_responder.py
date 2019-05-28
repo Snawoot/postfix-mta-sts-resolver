@@ -15,6 +15,7 @@ from async_generator import yield_, async_generator
 async def responder(event_loop):
     import postfix_mta_sts_resolver.utils as utils
     cfg = utils.populate_cfg_defaults(None)
+    cfg["zones"]["test2"] = cfg["default_zone"]
     resp = STSSocketmapResponder(cfg, event_loop)
     await resp.start()
     result = resp, cfg['host'], cfg['port']
@@ -30,6 +31,7 @@ def event_loop():
 buf_sizes = [4096, 128, 16, 1]
 reqresps = [
     (b'test vm-0.com', b'OK secure match=mx.vm-0.com'),
+    (b'test2 vm-0.com', b'OK secure match=mx.vm-0.com'),
     (b'test vm-0.com.', b'OK secure match=mx.vm-0.com'),
     (b'test .vm-0.com', b'NOTFOUND '),
     (b'test mta-sts.vm-0.com', b'NOTFOUND '),

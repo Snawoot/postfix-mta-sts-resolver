@@ -23,11 +23,9 @@ async def test_heartbeat():
         await asyncio.wait_for(daemon.heartbeat(), 5)
 
 def test_parse_args():
-    argv = sys.argv
     with MockCmdline("mta-sts-daemon", "-c", "/dev/null"):
         args = daemon.parse_args()
     assert args.config == '/dev/null'
     assert not args.disable_uvloop
     assert args.verbosity == utils.LogLevel.info
     assert args.logfile is None
-    assert sys.argv == argv

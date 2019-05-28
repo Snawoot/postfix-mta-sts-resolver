@@ -56,7 +56,7 @@ class STSSocketmapResponder:
 
         await self._cache.setup()
 
-        if self._reuse_port:
+        if self._reuse_port: # pragma: no cover
             if sys.platform in ('win32', 'cygwin'):
                 opts = {
                     'host': self._host,

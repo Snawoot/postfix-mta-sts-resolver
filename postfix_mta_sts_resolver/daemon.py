@@ -35,7 +35,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def exit_handler(exit_event, signum, frame):  # pylint: disable=unused-argument
+def exit_handler(exit_event, signum, frame):  # pragma: no cover pylint: disable=unused-argument
     logger = logging.getLogger('MAIN')
     if exit_event.is_set():
         logger.warning("Got second exit signal! Terminating hard.")
@@ -53,7 +53,7 @@ async def heartbeat():
         await asyncio.sleep(.5)
 
 
-async def amain(cfg, loop):
+async def amain(cfg, loop):  # pragma: no cover
     logger = logging.getLogger("MAIN")
     # Construct request handler instance
     responder = STSSocketmapResponder(cfg, loop)
@@ -75,7 +75,7 @@ async def amain(cfg, loop):
     await responder.stop()
 
 
-def main():
+def main():  # pragma: no cover
     # Parse command line arguments and setup basic logging
     args = parse_args()
     logger = utils.setup_logger('MAIN', args.verbosity, args.logfile)

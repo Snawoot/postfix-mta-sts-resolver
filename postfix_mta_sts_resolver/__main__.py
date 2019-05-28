@@ -18,7 +18,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def main():
+def main():  # pragma: no cover
     args = parse_args()
 
     loop = asyncio.get_event_loop()
@@ -27,5 +27,5 @@ def main():
     print(result)
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     main()
