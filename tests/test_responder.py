@@ -1,3 +1,4 @@
+import sys
 import asyncio
 import itertools
 
@@ -6,11 +7,24 @@ import pytest
 
 from postfix_mta_sts_resolver.responder import STSSocketmapResponder
 
-@pytest.fixture(scope="module")
-def event_loop():
-    loop = asyncio.get_event_loop()
-    yield loop
-    loop.close()
+if sys.hexversion < 0x03060000:
+    from async_generator import yield_, async_generator
+
+    @pytest.fixture(scope="module")
+    @async_generator
+    def event_loop():
+        loop = asyncio.get_event_loop()
+        await yield_(loop)
+        loop.close()
+else:
+    @pytest.fixture(scope="module")
+    def event_loop():
+        loop = asyncio.get_event_loop()
+        yield loop
+        loop.close()
+
+
+
 
 @pytest.fixture(scope="module")
 async def responder(event_loop):
