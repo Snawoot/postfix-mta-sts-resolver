@@ -93,3 +93,9 @@ def test_setup_logger():
         logger = utils.setup_logger("test", utils.LogLevel.info, tmpfile.name)
         logger.info("Hello World!")
         assert "Hello World!" in tmpfile.read()
+
+def test_setup_logger_stderr(capsys):
+    logger = utils.setup_logger("test", utils.LogLevel.info)
+    logger.info("Hello World!")
+    captured = capsys.readouterr()
+    assert "Hello World!" in captured.err

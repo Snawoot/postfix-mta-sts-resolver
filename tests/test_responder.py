@@ -1,11 +1,13 @@
 import sys
 import asyncio
 import itertools
+import socket
 
 import pynetstring
 import pytest
 
 from postfix_mta_sts_resolver.responder import STSSocketmapResponder
+import postfix_mta_sts_resolver.utils as utils
 from async_generator import yield_, async_generator
 
 @pytest.fixture(scope="module")
@@ -41,6 +43,29 @@ async def test_responder(responder, params):
     resp, host, port = responder
     decoder = pynetstring.Decoder()
     reader, writer = await asyncio.open_connection(host, port)
+    try:
+        while True:
+            writer.write(pynetstring.encode(request))
+            data = await reader.read(bufsize)
+            assert data
+            res = decoder.feed(data)
+            if res:
+                assert res[0] == response
+                break
+    finally:
+        writer.close()
+
+@pytest.mark.parametrize("params", itertools.product(reqresps, buf_sizes))
+@pytest.mark.asyncio
+@pytest.mark.timeout(5)
+async def test_responder_with_custom_socket(responder, params):
+    (request, response), bufsize = params
+    resp, host, port = responder
+    decoder = pynetstring.Decoder()
+    sock = await utils.create_custom_socket(host, 0, flags=0,
+                                            options=[(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)])
+    sock.connect((host, port))
+    reader, writer = await asyncio.open_connection(sock=sock)
     try:
         while True:
             writer.write(pynetstring.encode(request))

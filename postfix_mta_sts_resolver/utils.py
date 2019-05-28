@@ -40,7 +40,7 @@ def setup_logger(name, verbosity, logfile=None):
     return logger
 
 
-def enable_uvloop():
+def enable_uvloop():  # pragma: no cover
     try:
         import uvloop
         asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
