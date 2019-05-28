@@ -60,13 +60,13 @@ async def test_responder(responder, params):
 @pytest.mark.parametrize("params", itertools.product(reqresps, buf_sizes))
 @pytest.mark.asyncio
 @pytest.mark.timeout(5)
-async def test_responder_with_custom_socket(responder, params):
+async def test_responder_with_custom_socket(event_loop, responder, params):
     (request, response), bufsize = params
     resp, host, port = responder
     decoder = pynetstring.Decoder()
     sock = await utils.create_custom_socket(host, 0, flags=0,
                                             options=[(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)])
-    sock.connect((host, port))
+    await event_loop.run_in_executor(None, sock.connect, (host, port))
     reader, writer = await asyncio.open_connection(sock=sock)
     try:
         while True:
