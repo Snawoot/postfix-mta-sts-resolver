@@ -46,8 +46,8 @@ async def test_responder(responder, params):
     decoder = pynetstring.Decoder()
     reader, writer = await asyncio.open_connection(host, port)
     try:
+        writer.write(pynetstring.encode(request))
         while True:
-            writer.write(pynetstring.encode(request))
             data = await reader.read(bufsize)
             assert data
             res = decoder.feed(data)
@@ -57,20 +57,57 @@ async def test_responder(responder, params):
     finally:
         writer.close()
 
+@pytest.mark.asyncio
+@pytest.mark.timeout(5)
+async def test_empty_dialog(responder):
+    resp, host, port = responder
+    reader, writer = await asyncio.open_connection(host, port)
+    writer.close()
+
+@pytest.mark.asyncio
+@pytest.mark.timeout(5)
+async def test_early_disconnect(responder):
+    resp, host, port = responder
+    reader, writer = await asyncio.open_connection(host, port)
+    writer.write(pynetstring.encode(b'test gmail.com'))
+    writer.close()
+
+@pytest.mark.asyncio
+@pytest.mark.timeout(5)
+async def test_cached(responder):
+    resp, host, port = responder
+    decoder = pynetstring.Decoder()
+    reader, writer = await asyncio.open_connection(host, port)
+    writer.write(pynetstring.encode(b'test vm-0.com'))
+    writer.write(pynetstring.encode(b'test vm-0.com'))
+    answers = []
+    try:
+        while True:
+            data = await reader.read(4096)
+            assert data
+            res = decoder.feed(data)
+            if res:
+                answers += res
+                if len(answers) == 2:
+                    break
+        assert answers[0] == answers[1]
+    finally:
+        writer.close()
+
 @pytest.mark.parametrize("params", itertools.product(reqresps, buf_sizes))
 @pytest.mark.asyncio
 @pytest.mark.timeout(5)
-async def test_responder_with_custom_socket(responder, params):
+async def test_responder_with_custom_socket(event_loop, responder, params):
     (request, response), bufsize = params
     resp, host, port = responder
     decoder = pynetstring.Decoder()
     sock = await utils.create_custom_socket(host, 0, flags=0,
                                             options=[(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)])
-    sock.connect((host, port))
+    await event_loop.run_in_executor(None, sock.connect, (host, port))
     reader, writer = await asyncio.open_connection(sock=sock)
     try:
+        writer.write(pynetstring.encode(request))
         while True:
-            writer.write(pynetstring.encode(request))
             data = await reader.read(bufsize)
             assert data
             res = decoder.feed(data)

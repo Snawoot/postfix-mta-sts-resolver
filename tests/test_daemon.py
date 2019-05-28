@@ -20,7 +20,7 @@ class MockCmdline:
 @pytest.mark.asyncio
 async def test_heartbeat():
     with pytest.raises(asyncio.TimeoutError):
-        await asyncio.wait_for(daemon.heartbeat(), 5)
+        await asyncio.wait_for(daemon.heartbeat(), 1.5)
 
 def test_parse_args():
     with MockCmdline("mta-sts-daemon", "-c", "/dev/null"):
