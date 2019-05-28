@@ -46,14 +46,51 @@ async def test_responder(responder, params):
     decoder = pynetstring.Decoder()
     reader, writer = await asyncio.open_connection(host, port)
     try:
+        writer.write(pynetstring.encode(request))
         while True:
-            writer.write(pynetstring.encode(request))
             data = await reader.read(bufsize)
             assert data
             res = decoder.feed(data)
             if res:
                 assert res[0] == response
                 break
+    finally:
+        writer.close()
+
+@pytest.mark.asyncio
+@pytest.mark.timeout(5)
+async def test_empty_dialog(responder):
+    resp, host, port = responder
+    reader, writer = await asyncio.open_connection(host, port)
+    writer.close()
+
+@pytest.mark.asyncio
+@pytest.mark.timeout(5)
+async def test_early_disconnect(responder):
+    resp, host, port = responder
+    reader, writer = await asyncio.open_connection(host, port)
+    writer.write(pynetstring.encode(b'test gmail.com'))
+    writer.close()
+
+@pytest.mark.asyncio
+@pytest.mark.timeout(5)
+async def test_cached(responder):
+    resp, host, port = responder
+    decoder = pynetstring.Decoder()
+    reader, writer = await asyncio.open_connection(host, port)
+    writer.write(pynetstring.encode(b'test vm-0.com'))
+    writer.write(pynetstring.encode(b'test vm-0.com'))
+    answers = []
+    try:
+        while True:
+            data = await reader.read(4096)
+            assert data
+            res = decoder.feed(data)
+            if res:
+                answers += res
+                if len(answers) == 2:
+                    break
+        assert answers[0] == answers[1]
     finally:
         writer.close()
 
@@ -69,8 +106,8 @@ async def test_responder_with_custom_socket(event_loop, responder, params):
     await event_loop.run_in_executor(None, sock.connect, (host, port))
     reader, writer = await asyncio.open_connection(sock=sock)
     try:
+        writer.write(pynetstring.encode(request))
         while True:
-            writer.write(pynetstring.encode(request))
             data = await reader.read(bufsize)
             assert data
             res = decoder.feed(data)
