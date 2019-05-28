@@ -32,6 +32,7 @@ setup(name='postfix_mta_sts_resolver',
           'dev': [
               'pytest',
               'pytest-cov',
+              'pytest-asyncio',
               'pylint',
               'coverage',
               'setuptools>=38.6.0',
