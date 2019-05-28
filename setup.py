@@ -42,6 +42,7 @@ setup(name='postfix_mta_sts_resolver',
               'wheel>=0.31.0',
               'twine>=1.11.0',
           ],
+          'uvloop': 'uvloop>=0.11.0',
       },
       entry_points={
           'console_scripts': [
