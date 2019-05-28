@@ -10,21 +10,11 @@ from postfix_mta_sts_resolver.responder import STSSocketmapResponder
 if sys.hexversion < 0x03060000:
     from async_generator import yield_, async_generator
 
-    @pytest.fixture(scope="module")
-    @async_generator
-    def event_loop():
-        loop = asyncio.get_event_loop()
-        await yield_(loop)
-        loop.close()
-else:
-    @pytest.fixture(scope="module")
-    def event_loop():
-        loop = asyncio.get_event_loop()
-        yield loop
-        loop.close()
-
-
-
+@pytest.fixture(scope="module")
+def event_loop():
+    loop = asyncio.get_event_loop()
+    yield loop
+    loop.close()
 
 @pytest.fixture(scope="module")
 async def responder(event_loop):
@@ -32,7 +22,11 @@ async def responder(event_loop):
     cfg = utils.populate_cfg_defaults(None)
     resp = STSSocketmapResponder(cfg, event_loop)
     await resp.start()
-    yield resp, cfg['host'], cfg['port']
+    result = resp, cfg['host'], cfg['port']
+    if sys.hexversion < 0x03060000:
+        yield_(result)
+    else:
+        yield result
     await resp.stop()
 
 
