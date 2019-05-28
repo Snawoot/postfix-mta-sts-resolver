@@ -1,3 +1,4 @@
+import tempfile
 import collections.abc
 import enum
 import itertools
@@ -86,3 +87,9 @@ def test_filter_text(vector):
                 assert left == right_val
             else:
                 assert left.encode('ascii') == right_val
+
+def test_setup_logger():
+    with tempfile.NamedTemporaryFile('r') as tmpfile:
+        logger = utils.setup_logger("test", utils.LogLevel.info, tmpfile.name)
+        logger.info("Hello World!")
+        assert "Hello World!" in tmpfile.read()

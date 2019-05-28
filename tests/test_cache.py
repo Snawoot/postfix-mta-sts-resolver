@@ -1,14 +1,18 @@
+import tempfile
 import pytest
 import postfix_mta_sts_resolver.utils as utils
 import postfix_mta_sts_resolver.base_cache as base_cache
 
 @pytest.mark.parametrize("cache_type,cache_opts", [
     ("internal", {}),
-    ("sqlite", {"filename": "test.db"}),
+    ("sqlite", {}),
     ("redis", {"address": "redis://127.0.0.1/0?timeout=5"}),
 ])
 @pytest.mark.asyncio
 async def test_cache_lifecycle(cache_type, cache_opts):
+    if cache_type == 'sqlite':
+        tmpfile = tempfile.NamedTemporaryFile()
+        cache_opts["filename"] = tmpfile.name
     cache = utils.create_cache(cache_type, cache_opts)
     await cache.setup()
     assert await cache.get("nonexistent") == None
@@ -17,6 +21,8 @@ async def test_cache_lifecycle(cache_type, cache_opts):
     await cache.set("test", stored) # second time for testing conflicting insert
     assert await cache.get("test") == stored
     await cache.teardown()
+    if cache_type == 'sqlite':
+        tmpfile.close()
 
 @pytest.mark.asyncio
 async def test_capped_cache():
