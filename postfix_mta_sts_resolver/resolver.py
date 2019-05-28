@@ -2,6 +2,7 @@ import enum
 from io import BytesIO
 
 import aiodns
+import aiodns.error
 import aiohttp
 
 from . import defaults
@@ -21,7 +22,6 @@ class STSFetchResult(enum.Enum):
 
 
 _HEADERS = {"User-Agent": defaults.USER_AGENT}
-
 
 # pylint: disable=too-few-public-methods
 class STSResolver:
@@ -53,14 +53,14 @@ class STSResolver:
         try:
             txt_records = await self._resolver.query(sts_txt_domain, 'TXT')
         except aiodns.error.DNSError as error:
-            if error.args[0] == aiodns.error.ARES_ETIMEOUT:  # pylint: disable=no-else-return
+            if error.args[0] == aiodns.error.ARES_ETIMEOUT:  # pylint: disable=no-else-return,no-member
                 # It's hard to decide what to do in case of timeout
                 # Probably it's better to threat this as fetch error
                 # so caller probably shall report such cases.
                 return STSFetchResult.FETCH_ERROR, None
-            elif error.args[0] == aiodns.error.ARES_ENOTFOUND:
+            elif error.args[0] == aiodns.error.ARES_ENOTFOUND:  # pylint: disable=no-else-return,no-member
                 return STSFetchResult.NONE, None
-            elif error.args[0] == aiodns.error.ARES_ENODATA:
+            elif error.args[0] == aiodns.error.ARES_ENODATA:  # pylint: disable=no-else-return,no-member
                 return STSFetchResult.NONE, None
             else:
                 return STSFetchResult.NONE, None

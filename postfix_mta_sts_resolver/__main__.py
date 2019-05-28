@@ -3,7 +3,6 @@
 import argparse
 import asyncio
 
-from . import utils
 from .resolver import STSResolver
 
 def parse_args():

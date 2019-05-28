@@ -29,6 +29,15 @@ setup(name='postfix_mta_sts_resolver',
       extras_require={
           'sqlite': 'aiosqlite>=0.10.0',
           'redis': 'aioredis>=1.2.0',
+          'dev': [
+              'pytest',
+              'pytest-cov',
+              'pylint',
+              'coverage',
+              'setuptools>=38.6.0',
+              'wheel>=0.31.0',
+              'twine>=1.11.0',
+          ],
       },
       entry_points={
           'console_scripts': [
