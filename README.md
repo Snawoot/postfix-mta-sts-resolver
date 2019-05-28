@@ -1,6 +1,8 @@
 postfix-mta-sts-resolver
 ========================
 
+[![Build Status](https://travis-ci.org/Snawoot/postfix-mta-sts-resolver.svg?branch=master)](https://travis-ci.org/Snawoot/postfix-mta-sts-resolver)
+
 Daemon which provides TLS client policy for Postfix via socketmap, according to domain MTA-STS policy. Current support of RFC8461 is limited - daemon lacks some minor features:
 
 * Proactive policy fetch
