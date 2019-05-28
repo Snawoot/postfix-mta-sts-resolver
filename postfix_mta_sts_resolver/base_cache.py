@@ -9,16 +9,16 @@ CacheEntry = collections.namedtuple('CacheEntry', ('ts', 'pol_id', 'pol_body'))
 class BaseCache(ABC):
     @abstractmethod
     async def setup(self):
-        pass
+        """ Abstract method """
 
     @abstractmethod
     async def get(self, key):
-        pass
+        """ Abstract method """
 
     @abstractmethod
     async def set(self, key, value):
-        pass
+        """ Abstract method """
 
     @abstractmethod
     async def teardown(self):
-        pass
+        """ Abstract method """
