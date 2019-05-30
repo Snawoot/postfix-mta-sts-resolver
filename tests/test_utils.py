@@ -6,7 +6,15 @@ import itertools
 import pytest
 import postfix_mta_sts_resolver.utils as utils
 
-@pytest.mark.parametrize("cfg", [None, {}])
+@pytest.mark.parametrize("cfg", [None,
+                                 {},
+                                 {
+                                    "zones": {
+                                        "aaa": {},
+                                        "bbb": {},
+                                    }
+                                 },
+                                ])
 def test_populate_cfg_defaults(cfg):
     res = utils.populate_cfg_defaults(cfg)
     assert isinstance(res['host'], str)
