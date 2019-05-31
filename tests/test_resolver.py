@@ -25,17 +25,6 @@ async def test_simple_resolve(domain):
     assert status is FR.NOT_CHANGED
     assert body2 is None
 
-@pytest.mark.parametrize("domain", ['mta-sts.vm-0.com',
-                                    '.vm-0.com',
-                                    '.vm-0.com.',
-                                    '.mta-sts.vm-0.com.'])
-@pytest.mark.asyncio
-async def test_negative_resolve(domain):
-    resolver = Resolver(loop=None)
-    status, body = await resolver.resolve(domain)
-    assert status is FR.NONE
-    assert body is None
-
 @pytest.mark.parametrize("domain,expected_status", [("good.loc", FR.VALID),
                                                     ("no-record.loc", FR.NONE),
                                                     ("bad-record1.loc", FR.NONE),
