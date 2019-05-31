@@ -21,7 +21,7 @@ def set_env(**environ):
 @pytest.mark.parametrize("domain", ['good.loc', 'good.loc.'])
 @pytest.mark.asyncio
 async def test_simple_resolve(domain):
-    resolver = Resolver(loop=None)
+    resolver = Resolver(loop=None, timeout=1)
     status, (ver, policy) = await resolver.resolve(domain)
     assert status is FR.VALID
     assert 'mx' in policy
