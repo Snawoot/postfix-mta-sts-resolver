@@ -19,9 +19,6 @@ class LogLevel(enum.IntEnum):
     def __str__(self):
         return self.name
 
-    def __contains__(self, elem):
-        return elem in self.__members__  # pylint: disable=no-member
-
 
 def setup_logger(name, verbosity, logfile=None):
 

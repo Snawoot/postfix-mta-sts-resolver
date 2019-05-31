@@ -9,7 +9,7 @@ address=/mta-sts.bad-record2.loc/127.0.0.1
 txt-record=_mta-sts.bad-record2.loc,"azazaza;asdasdasdasd"
 
 address=/mta-sts.bad-record3.loc/127.0.0.1
-txt-record=_mta-sts.bad-record3.loc,"v=STSv2;id=20180907T090909;"
+txt-record=_mta-sts.bad-record3.loc,"v=STSv12;id=20180907T090909;"
 
 address=/mta-sts.no-record.loc/127.0.0.1
 
@@ -45,3 +45,21 @@ txt-record=_mta-sts.bad-cert1.loc,"v=STSv1;id=20180907T090909;"
 
 address=/mta-sts.bad-cert2.loc/127.0.0.1
 txt-record=_mta-sts.bad-cert2.loc,"v=STSv1;id=20180907T090909;"
+
+address=/mta-sts.valid-none.loc/127.0.0.1
+txt-record=_mta-sts.valid-none.loc,"v=STSv1;id=20180907T090909;"
+
+address=/mta-sts.testing.loc/127.0.0.1
+txt-record=_mta-sts.testing.loc,"v=STSv1;id=20180907T090909;"
+
+address=/mta-sts.fast-expire.loc/127.0.0.1
+txt-record=_mta-sts.fast-expire.loc,"v=STSv1;id=20180907T090909;"
+
+address=/mta-sts.static-overlength.loc/127.0.0.1
+txt-record=_mta-sts.static-overlength.loc,"v=STSv1;id=20180907T090909;"
+
+address=/mta-sts.chunked-overlength.loc/127.0.0.1
+txt-record=_mta-sts.chunked-overlength.loc,"v=STSv1;id=20180907T090909;"
+
+address=/mta-sts.no-data.loc/127.0.0.1
+address=/_mta-sts.no-data.loc/127.0.0.1

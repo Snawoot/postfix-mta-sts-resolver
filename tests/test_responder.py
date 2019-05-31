@@ -22,18 +22,14 @@ async def responder(event_loop):
     await yield_(result)
     await resp.stop()
 
-@pytest.fixture(scope="module")
-def event_loop():
-    loop = asyncio.get_event_loop()
-    yield loop
-    loop.close()
-
 buf_sizes = [4096, 128, 16, 1]
 reqresps = [
     (b'test good.loc', b'OK secure match=mail.loc'),
     (b'test2 good.loc', b'OK secure match=mail.loc'),
     (b'test good.loc.', b'OK secure match=mail.loc'),
     (b'test .good.loc', b'NOTFOUND '),
+    (b'test valid-none.loc', b'NOTFOUND '),
+    (b'test testing.loc', b'NOTFOUND '),
     (b'test no-record.loc', b'NOTFOUND '),
     (b'test .no-record.loc', b'NOTFOUND '),
     (b'test bad-record1.loc', b'NOTFOUND '),
@@ -73,6 +69,16 @@ async def test_empty_dialog(responder):
 
 @pytest.mark.asyncio
 @pytest.mark.timeout(5)
+async def test_corrupt_dialog(responder):
+    resp, host, port = responder
+    reader, writer = await asyncio.open_connection(host, port)
+    msg = pynetstring.encode(b'test good.loc')[:-1] + b'!'
+    writer.write(msg)
+    assert await reader.read() == b''
+    writer.close()
+
+@pytest.mark.asyncio
+@pytest.mark.timeout(5)
 async def test_early_disconnect(responder):
     resp, host, port = responder
     reader, writer = await asyncio.open_connection(host, port)
@@ -98,6 +104,29 @@ async def test_cached(responder):
                 if len(answers) == 2:
                     break
         assert answers[0] == answers[1]
+    finally:
+        writer.close()
+
+@pytest.mark.asyncio
+@pytest.mark.timeout(7)
+async def test_fast_expire(responder):
+    resp, host, port = responder
+    decoder = pynetstring.Decoder()
+    reader, writer = await asyncio.open_connection(host, port)
+    async def answer():
+        while True:
+            data = await reader.read(4096)
+            assert data
+            res = decoder.feed(data)
+            if res:
+                return res[0]
+    try:
+        writer.write(pynetstring.encode(b'test fast-expire.loc'))
+        answer_a = await answer()
+        await asyncio.sleep(2)
+        writer.write(pynetstring.encode(b'test fast-expire.loc'))
+        answer_b = await answer()
+        assert answer_a == answer_b == b'OK secure match=mail.loc'
     finally:
         writer.close()
 
