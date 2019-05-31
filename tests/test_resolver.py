@@ -60,6 +60,7 @@ async def test_simple_resolve(domain):
                                                     ("chunked-overlength.loc", FR.FETCH_ERROR),
                                                     ("bad-cert1.loc", FR.FETCH_ERROR),
                                                     ("bad-cert2.loc", FR.FETCH_ERROR),
+                                                    ("blackhole.loc", FR.FETCH_ERROR),
                                                     ])
 @pytest.mark.asyncio
 async def test_resolve_status(event_loop, domain, expected_status):
