@@ -22,12 +22,6 @@ async def responder(event_loop):
     await yield_(result)
     await resp.stop()
 
-@pytest.fixture(scope="module")
-def event_loop():
-    loop = asyncio.get_event_loop()
-    yield loop
-    loop.close()
-
 buf_sizes = [4096, 128, 16, 1]
 reqresps = [
     (b'test good.loc', b'OK secure match=mail.loc'),
@@ -35,6 +29,7 @@ reqresps = [
     (b'test good.loc.', b'OK secure match=mail.loc'),
     (b'test .good.loc', b'NOTFOUND '),
     (b'test valid-none.loc', b'NOTFOUND '),
+    (b'test testing.loc', b'NOTFOUND '),
     (b'test no-record.loc', b'NOTFOUND '),
     (b'test .no-record.loc', b'NOTFOUND '),
     (b'test bad-record1.loc', b'NOTFOUND '),

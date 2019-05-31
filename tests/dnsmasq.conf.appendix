@@ -49,3 +49,6 @@ txt-record=_mta-sts.bad-cert2.loc,"v=STSv1;id=20180907T090909;"
 address=/mta-sts.valid-none.loc/127.0.0.1
 txt-record=_mta-sts.valid-none.loc,"v=STSv1;id=20180907T090909;"
 
+address=/mta-sts.testing.loc/127.0.0.1
+txt-record=_mta-sts.testing.loc,"v=STSv1;id=20180907T090909;"
+

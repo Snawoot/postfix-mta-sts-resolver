@@ -27,6 +27,7 @@ async def test_simple_resolve(domain):
 
 @pytest.mark.parametrize("domain,expected_status", [("good.loc", FR.VALID),
                                                     ("good.loc.", FR.VALID),
+                                                    ("testing.loc", FR.VALID),
                                                     (".good.loc", FR.NONE),
                                                     (".good.loc.", FR.NONE),
                                                     ("valid-none.loc", FR.VALID),
@@ -50,5 +51,10 @@ async def test_resolve_status(event_loop, domain, expected_status):
     resolver = Resolver(loop=event_loop)
     status, body = await resolver.resolve(domain)
     assert status is expected_status
-    if expected_status is not FR.VALID:
+    if expected_status is FR.VALID:
+        ver, pol = body
+        if pol['mode'] != 'none':
+            assert isinstance(pol['mx'], collections.abc.Iterable)
+            assert pol['mx']
+    else:
         assert body is None
