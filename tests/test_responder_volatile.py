@@ -16,7 +16,7 @@ async def responder(event_loop):
     import postfix_mta_sts_resolver.utils as utils
     cfg = utils.populate_cfg_defaults(None)
     cfg["shutdown_timeout"] = 1
-    cfg["cache_grace"] = 1
+    cfg["cache_grace"] = 0
     cfg["zones"]["test2"] = cfg["default_zone"]
     resp = STSSocketmapResponder(cfg, event_loop)
     await resp.start()
@@ -55,3 +55,27 @@ async def test_grace_expired(responder):
         assert answer_a == answer_b
     finally:
         writer.close()
+
+@pytest.mark.asyncio
+@pytest.mark.timeout(7)
+async def test_fast_expire(responder):
+    resp, host, port = responder
+    decoder = pynetstring.Decoder()
+    reader, writer = await asyncio.open_connection(host, port)
+    async def answer():
+        while True:
+            data = await reader.read(4096)
+            assert data
+            res = decoder.feed(data)
+            if res:
+                return res[0]
+    try:
+        writer.write(pynetstring.encode(b'test fast-expire.loc'))
+        answer_a = await answer()
+        await asyncio.sleep(2)
+        writer.write(pynetstring.encode(b'test fast-expire.loc'))
+        answer_b = await answer()
+        assert answer_a == answer_b == b'OK secure match=mail.loc'
+    finally:
+        writer.close()
+
