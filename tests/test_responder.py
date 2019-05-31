@@ -107,6 +107,29 @@ async def test_cached(responder):
     finally:
         writer.close()
 
+@pytest.mark.asyncio
+@pytest.mark.timeout(7)
+async def test_fast_expire(responder):
+    resp, host, port = responder
+    decoder = pynetstring.Decoder()
+    reader, writer = await asyncio.open_connection(host, port)
+    async def answer():
+        while True:
+            data = await reader.read(4096)
+            assert data
+            res = decoder.feed(data)
+            if res:
+                return res[0]
+    try:
+        writer.write(pynetstring.encode(b'test fast-expire.loc'))
+        answer_a = await answer()
+        await asyncio.sleep(2)
+        writer.write(pynetstring.encode(b'test fast-expire.loc'))
+        answer_b = await answer()
+        assert answer_a == answer_b == b'OK secure match=mail.loc'
+    finally:
+        writer.close()
+
 @pytest.mark.parametrize("params", itertools.product(reqresps, buf_sizes))
 @pytest.mark.asyncio
 @pytest.mark.timeout(5)

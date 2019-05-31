@@ -37,7 +37,8 @@ install:
   -D bad-policy8.loc mta-sts.bad-policy8.loc 
   -D bad-cert2.loc
   -D valid-none.loc mta-sts.valid-none.loc
-  -D mta-sts.testing.loc"
+  -D mta-sts.testing.loc
+  -D fast-expire.loc mta-sts.fast-expire.loc"
   - "tests/mkcerts.py -o /tmp/bad-certs -D bad-cert1.loc mta-sts.bad-cert1.loc"
   - "sudo mkdir -p /usr/local/share/ca-certificates/test"
   - "sudo install -m 644 -o root -g root /tmp/certs/ca.pem /usr/local/share/ca-certificates/test/test-ca.crt"
