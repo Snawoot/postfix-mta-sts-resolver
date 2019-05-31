@@ -106,3 +106,8 @@ venv.bak/
 
 man/*.?
 *.db
+*.pem
+*.der
+*.cer
+*.crt
+*.key

@@ -14,12 +14,18 @@ from .responder import STSSocketmapResponder
 
 
 def parse_args():
+    def check_loglevel(arg):
+        try:
+            return utils.LogLevel[arg]
+        except (IndexError, KeyError):
+            raise argparse.ArgumentTypeError("%s is not valid loglevel" % (repr(arg),))
+
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("-v", "--verbosity",
                         help="logging verbosity",
-                        type=utils.LogLevel.__getitem__,
-                        choices=list(utils.LogLevel),
+                        type=check_loglevel,
+                        choices=utils.LogLevel,
                         default=utils.LogLevel.info)
     parser.add_argument("-c", "--config",
                         help="config file location",

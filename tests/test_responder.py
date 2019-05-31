@@ -30,12 +30,19 @@ def event_loop():
 
 buf_sizes = [4096, 128, 16, 1]
 reqresps = [
-    (b'test vm-0.com', b'OK secure match=mx.vm-0.com'),
-    (b'test2 vm-0.com', b'OK secure match=mx.vm-0.com'),
-    (b'test vm-0.com.', b'OK secure match=mx.vm-0.com'),
-    (b'test .vm-0.com', b'NOTFOUND '),
-    (b'test mta-sts.vm-0.com', b'NOTFOUND '),
-    (b'test .mta-sts.vm-0.com', b'NOTFOUND '),
+    (b'test good.loc', b'OK secure match=mail.loc'),
+    (b'test2 good.loc', b'OK secure match=mail.loc'),
+    (b'test good.loc.', b'OK secure match=mail.loc'),
+    (b'test .good.loc', b'NOTFOUND '),
+    (b'test no-record.loc', b'NOTFOUND '),
+    (b'test .no-record.loc', b'NOTFOUND '),
+    (b'test bad-record1.loc', b'NOTFOUND '),
+    (b'test bad-record2.loc', b'NOTFOUND '),
+    (b'test bad-policy1.loc', b'NOTFOUND '),
+    (b'test bad-policy2.loc', b'NOTFOUND '),
+    (b'test bad-policy3.loc', b'NOTFOUND '),
+    (b'test bad-cert1.loc', b'NOTFOUND '),
+    (b'test bad-cert2.loc', b'NOTFOUND '),
 ]
 @pytest.mark.parametrize("params", itertools.product(reqresps, buf_sizes))
 @pytest.mark.asyncio
@@ -69,7 +76,7 @@ async def test_empty_dialog(responder):
 async def test_early_disconnect(responder):
     resp, host, port = responder
     reader, writer = await asyncio.open_connection(host, port)
-    writer.write(pynetstring.encode(b'test gmail.com'))
+    writer.write(pynetstring.encode(b'test good.loc'))
     writer.close()
 
 @pytest.mark.asyncio
@@ -78,8 +85,8 @@ async def test_cached(responder):
     resp, host, port = responder
     decoder = pynetstring.Decoder()
     reader, writer = await asyncio.open_connection(host, port)
-    writer.write(pynetstring.encode(b'test vm-0.com'))
-    writer.write(pynetstring.encode(b'test vm-0.com'))
+    writer.write(pynetstring.encode(b'test good.loc'))
+    writer.write(pynetstring.encode(b'test good.loc'))
     answers = []
     try:
         while True:
