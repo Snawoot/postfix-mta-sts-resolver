@@ -15,6 +15,7 @@ from async_generator import yield_, async_generator
 async def responder(event_loop):
     import postfix_mta_sts_resolver.utils as utils
     cfg = utils.populate_cfg_defaults(None)
+    cfg["shutdown_timeout"] = 1
     cfg["zones"]["test2"] = cfg["default_zone"]
     resp = STSSocketmapResponder(cfg, event_loop)
     await resp.start()
@@ -23,7 +24,7 @@ async def responder(event_loop):
     await resp.stop()
 
 @pytest.mark.asyncio
-@pytest.mark.timeout(30)
+@pytest.mark.timeout(5)
 async def test_hanging_stop(responder):
     resp, host, port = responder
     reader, writer = await asyncio.open_connection(host, port)

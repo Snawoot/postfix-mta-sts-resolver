@@ -74,6 +74,16 @@ async def test_empty_dialog(responder):
 
 @pytest.mark.asyncio
 @pytest.mark.timeout(5)
+async def test_corrupt_dialog(responder):
+    resp, host, port = responder
+    reader, writer = await asyncio.open_connection(host, port)
+    msg = pynetstring.encode(b'test good.loc')[:-1] + b'!'
+    writer.write(msg)
+    assert await reader.read() == b''
+    writer.close()
+
+@pytest.mark.asyncio
+@pytest.mark.timeout(5)
 async def test_early_disconnect(responder):
     resp, host, port = responder
     reader, writer = await asyncio.open_connection(host, port)
