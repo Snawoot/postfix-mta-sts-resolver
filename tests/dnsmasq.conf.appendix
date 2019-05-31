@@ -9,7 +9,7 @@ address=/mta-sts.bad-record2.loc/127.0.0.1
 txt-record=_mta-sts.bad-record2.loc,"azazaza;asdasdasdasd"
 
 address=/mta-sts.bad-record3.loc/127.0.0.1
-txt-record=_mta-sts.bad-record3.loc,"v=STSv2;id=20180907T090909;"
+txt-record=_mta-sts.bad-record3.loc,"v=STSv12;id=20180907T090909;"
 
 address=/mta-sts.no-record.loc/127.0.0.1
 
