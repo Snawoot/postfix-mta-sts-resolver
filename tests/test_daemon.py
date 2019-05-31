@@ -1,5 +1,6 @@
 import sys
 import asyncio
+import argparse
 
 import pytest
 
@@ -29,3 +30,8 @@ def test_parse_args():
     assert not args.disable_uvloop
     assert args.verbosity == utils.LogLevel.info
     assert args.logfile is None
+
+def test_bad_args():
+    with MockCmdline("mta-sts-daemon", "-c", "/dev/null", "-v", "xxx"):
+        with pytest.raises(SystemExit):
+            args = daemon.parse_args()
