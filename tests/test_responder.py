@@ -34,6 +34,7 @@ reqresps = [
     (b'test2 good.loc', b'OK secure match=mail.loc'),
     (b'test good.loc.', b'OK secure match=mail.loc'),
     (b'test .good.loc', b'NOTFOUND '),
+    (b'test valid-none.loc', b'NOTFOUND '),
     (b'test no-record.loc', b'NOTFOUND '),
     (b'test .no-record.loc', b'NOTFOUND '),
     (b'test bad-record1.loc', b'NOTFOUND '),

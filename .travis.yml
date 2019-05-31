@@ -36,7 +36,8 @@ install:
   -D bad-policy6.loc mta-sts.bad-policy6.loc 
   -D bad-policy7.loc mta-sts.bad-policy7.loc 
   -D bad-policy8.loc mta-sts.bad-policy8.loc 
-  -D bad-cert2.loc"
+  -D bad-cert2.loc
+  -D valid-none.loc mta-sts.valid-none.loc"
   - "tests/mkcerts.py -o /tmp/bad-certs -D bad-cert1.loc mta-sts.bad-cert1.loc"
   - "sudo mkdir -p /usr/local/share/ca-certificates/test"
   - "sudo install -m 644 -o root -g root /tmp/certs/ca.pem /usr/local/share/ca-certificates/test/test-ca.crt"

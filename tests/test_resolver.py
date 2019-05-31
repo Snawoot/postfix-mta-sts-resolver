@@ -29,6 +29,7 @@ async def test_simple_resolve(domain):
                                                     ("good.loc.", FR.VALID),
                                                     (".good.loc", FR.NONE),
                                                     (".good.loc.", FR.NONE),
+                                                    ("valid-none.loc", FR.VALID),
                                                     ("no-record.loc", FR.NONE),
                                                     ("bad-record1.loc", FR.NONE),
                                                     ("bad-record2.loc", FR.NONE),
