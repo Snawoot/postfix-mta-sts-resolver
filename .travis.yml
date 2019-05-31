@@ -15,7 +15,7 @@ matrix:
       env: TOXENV=py37
 install:
   - "sudo apt-get update"
-  - "sudo apt-get install redis-server dnsmasq lsof nginx-light -y"
+  - "sudo apt-get install redis-server dnsmasq lsof nginx-extras -y"
   - "sudo systemctl start redis-server || { sudo journalctl -xe ; false ; }"
   - "sudo lsof -ni :53"
   - "sudo cat /etc/resolv.conf"
@@ -38,7 +38,9 @@ install:
   -D bad-cert2.loc
   -D valid-none.loc mta-sts.valid-none.loc
   -D mta-sts.testing.loc
-  -D fast-expire.loc mta-sts.fast-expire.loc"
+  -D chunked-overlength.loc mta-sts.chunked-overlength.loc
+  -D static-overlength.loc mta-sts.static-overlength.loc
+  -D fast-expire.loc *.fast-expire.loc"
   - "tests/mkcerts.py -o /tmp/bad-certs -D bad-cert1.loc mta-sts.bad-cert1.loc"
   - "sudo mkdir -p /usr/local/share/ca-certificates/test"
   - "sudo install -m 644 -o root -g root /tmp/certs/ca.pem /usr/local/share/ca-certificates/test/test-ca.crt"

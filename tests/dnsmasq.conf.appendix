@@ -55,3 +55,9 @@ txt-record=_mta-sts.testing.loc,"v=STSv1;id=20180907T090909;"
 address=/mta-sts.fast-expire.loc/127.0.0.1
 txt-record=_mta-sts.fast-expire.loc,"v=STSv1;id=20180907T090909;"
 
+address=/mta-sts.static-overlength.loc/127.0.0.1
+txt-record=_mta-sts.static-overlength.loc,"v=STSv1;id=20180907T090909;"
+
+address=/mta-sts.chunked-overlength.loc/127.0.0.1
+txt-record=_mta-sts.chunked-overlength.loc,"v=STSv1;id=20180907T090909;"
+

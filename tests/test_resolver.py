@@ -43,6 +43,8 @@ async def test_simple_resolve(domain):
                                                     ("bad-policy6.loc", FR.FETCH_ERROR),
                                                     ("bad-policy7.loc", FR.FETCH_ERROR),
                                                     ("bad-policy8.loc", FR.FETCH_ERROR),
+                                                    ("static-overlength.loc", FR.FETCH_ERROR),
+                                                    ("chunked-overlength.loc", FR.FETCH_ERROR),
                                                     ("bad-cert1.loc", FR.FETCH_ERROR),
                                                     ("bad-cert2.loc", FR.FETCH_ERROR),
                                                     ])
