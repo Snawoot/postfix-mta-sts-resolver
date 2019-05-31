@@ -62,7 +62,7 @@ class STSResolver:
                 return STSFetchResult.NONE, None
             elif error.args[0] == aiodns.error.ARES_ENODATA:  # pylint: disable=no-else-return,no-member
                 return STSFetchResult.NONE, None
-            else:
+            else:  # pragma: no cover
                 return STSFetchResult.NONE, None
 
         # workaround for floating return type of pycares

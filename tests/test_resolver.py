@@ -1,10 +1,22 @@
 import collections.abc
+import contextlib
+import os
 
 import pytest
 
 import postfix_mta_sts_resolver.resolver as resolver
 from postfix_mta_sts_resolver.resolver import STSFetchResult as FR
 from postfix_mta_sts_resolver.resolver import STSResolver as Resolver
+
+@contextlib.contextmanager
+def set_env(**environ):
+    old_environ = dict(os.environ)
+    os.environ.update(environ)
+    try:
+        yield
+    finally:
+        os.environ.clear()
+        os.environ.update(old_environ)
 
 @pytest.mark.parametrize("domain", ['good.loc', 'good.loc.'])
 @pytest.mark.asyncio
@@ -61,3 +73,20 @@ async def test_resolve_status(event_loop, domain, expected_status):
             assert pol['mx']
     else:
         assert body is None
+
+@pytest.mark.asyncio
+async def test_proxy(event_loop):
+    with set_env(https_proxy='http://127.0.0.2:8888'):
+        resolver = Resolver(loop=event_loop)
+    status, (ver, pol) = await resolver.resolve("good.loc")
+    assert status is FR.VALID
+    assert pol['mode'] == 'enforce'
+    assert pol['mx'] == ['mail.loc']
+
+@pytest.mark.asyncio
+async def test_proxy_negative(event_loop):
+    with set_env(https_proxy='http://127.0.0.2:18888'):
+        resolver = Resolver(loop=event_loop)
+    status, body = await resolver.resolve("good.loc")
+    assert status is FR.FETCH_ERROR
+    assert body is None

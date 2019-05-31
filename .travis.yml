@@ -1,5 +1,5 @@
 language: python
-dist: bionic
+dist: xenial
 
 matrix:
   include:
@@ -15,7 +15,7 @@ matrix:
       env: TOXENV=py37
 install:
   - "sudo apt-get update"
-  - "sudo apt-get install redis-server dnsmasq lsof nginx-extras -y"
+  - "sudo apt-get install redis-server dnsmasq lsof nginx-extras tinyproxy -y"
   - "sudo systemctl start redis-server || { sudo journalctl -xe ; false ; }"
   - "sudo lsof -ni :53"
   - "sudo cat /etc/resolv.conf"
@@ -46,6 +46,8 @@ install:
   - "sudo install -m 644 -o root -g root /tmp/certs/ca.pem /usr/local/share/ca-certificates/test/test-ca.crt"
   - "sudo update-ca-certificates"
   - "sudo systemctl restart nginx || { sudo journalctl -xe ; false ; }"
+  - "sudo install -m 644 -o root -g root tests/tinyproxy.conf /etc/tinyproxy.conf"
+  - "sudo systemctl restart tinyproxy || { sudo journalctl -xe ; false ; }"
   - "pip install tox"
 script:
   - tox
