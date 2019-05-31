@@ -19,7 +19,7 @@ class LogLevel(enum.IntEnum):
     def __str__(self):
         return self.name
 
-    def __contains__(self, elem):
+    def __contains__(self, elem):  # pragma: no cover
         return elem in self.__members__  # pylint: disable=no-member
 
 
