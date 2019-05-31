@@ -26,6 +26,9 @@ async def test_simple_resolve(domain):
     assert body2 is None
 
 @pytest.mark.parametrize("domain,expected_status", [("good.loc", FR.VALID),
+                                                    ("good.loc.", FR.VALID),
+                                                    (".good.loc", FR.NONE),
+                                                    (".good.loc.", FR.NONE),
                                                     ("no-record.loc", FR.NONE),
                                                     ("bad-record1.loc", FR.NONE),
                                                     ("bad-record2.loc", FR.NONE),
