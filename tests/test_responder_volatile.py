@@ -15,6 +15,7 @@ from async_generator import yield_, async_generator
 async def responder(event_loop):
     import postfix_mta_sts_resolver.utils as utils
     cfg = utils.populate_cfg_defaults(None)
+    cfg["port"] = 38461
     cfg["shutdown_timeout"] = 1
     cfg["cache_grace"] = 0
     cfg["zones"]["test2"] = cfg["default_zone"]

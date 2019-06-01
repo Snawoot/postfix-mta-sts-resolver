@@ -16,6 +16,7 @@ async def responder(event_loop):
     import postfix_mta_sts_resolver.utils as utils
     cfg = utils.populate_cfg_defaults({"default_zone": {"strict_testing": True}})
     cfg["zones"]["test2"] = cfg["default_zone"]
+    cfg["port"] = 28461
     resp = STSSocketmapResponder(cfg, event_loop)
     await resp.start()
     result = resp, cfg['host'], cfg['port']
