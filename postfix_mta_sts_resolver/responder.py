@@ -121,7 +121,7 @@ class STSSocketmapResponder:
                 except asyncio.CancelledError:
                     writer.close()
                     return
-                except Exception as exc:
+                except Exception as exc: # pragma: no cover
                     self._logger.exception("Unhandled exception from future: %s", exc)
                     writer.close()
                     return

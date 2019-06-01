@@ -46,6 +46,20 @@ async def test_inprogress_stop(responder):
     writer.close()
 
 @pytest.mark.asyncio
+@pytest.mark.timeout(5)
+async def test_extended_stop(responder):
+    resp, host, port = responder
+    reader, writer = await asyncio.open_connection(host, port)
+    writer.write(pynetstring.encode(b'test blackhole.loc'))
+    writer.write(pynetstring.encode(b'test blackhole.loc'))
+    writer.write(pynetstring.encode(b'test blackhole.loc'))
+    await writer.drain()
+    await asyncio.sleep(0.2)
+    await resp.stop()
+    assert await reader.read() == b''
+    writer.close()
+
+@pytest.mark.asyncio
 @pytest.mark.timeout(7)
 async def test_grace_expired(responder):
     resp, host, port = responder
