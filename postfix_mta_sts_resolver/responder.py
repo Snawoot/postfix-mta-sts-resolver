@@ -106,37 +106,33 @@ class STSSocketmapResponder:
         await self._cache.teardown()
 
     async def sender(self, queue, writer):
+        def cleanup_queue():
+            while not queue.empty():
+                task = queue.get_nowait()
+                try:
+                    task.cancel()
+                except Exception:  # pragma: no cover
+                    pass
+
         try:
             while True:
                 fut = await queue.get()
-
                 # Check for shutdown
                 if fut is None:
-                    writer.close()
                     return
-
                 self._logger.debug("Got new future from queue")
-                try:
-                    data = await fut
-                except asyncio.CancelledError:
-                    writer.close()
-                    return
-                except Exception as exc: # pragma: no cover
-                    self._logger.exception("Unhandled exception from future: %s", exc)
-                    writer.close()
-                    return
+                data = await fut
                 self._logger.debug("Future await complete: data=%s", repr(data))
                 writer.write(data)
                 self._logger.debug("Wrote: %s", repr(data))
                 await writer.drain()
         except asyncio.CancelledError:
-            try:
-                fut.cancel()
-            except Exception:
-                pass
-            while not queue.empty():
-                task = queue.get_nowait()
-                task.cancel()
+            cleanup_queue()
+        except Exception as exc: # pragma: no cover
+            self._logger.exception("Exception in sender coro: %s", exc)
+            cleanup_queue()
+        finally:
+            writer.close()
 
     # pylint: disable=too-many-locals,too-many-branches,too-many-statements
     async def process_request(self, raw_req):
