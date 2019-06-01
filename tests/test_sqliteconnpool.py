@@ -68,3 +68,42 @@ async def test_borrow_timeout(dbfile):
                     pass
     finally:
         await pool.stop()
+
+@pytest.mark.asyncio
+@pytest.mark.timeout(2)
+async def test_conn_reuse(dbfile):
+    pool = SqliteConnPool(1, (dbfile,), init_queries=CONN_INIT)
+    await pool.prepare()
+    try:
+        async with pool.borrow() as conn:
+            first = conn
+        async with pool.borrow() as conn:
+            second = conn
+        assert first is second
+    finally:
+        await pool.stop()
+
+@pytest.mark.asyncio
+@pytest.mark.timeout(2)
+async def test_conn_ressurection(dbfile):
+    class TestError(Exception):
+        pass
+    pool = SqliteConnPool(1, (dbfile,), init_queries=CONN_INIT)
+    await pool.prepare()
+    try:
+        with pytest.raises(TestError):
+            async with pool.borrow() as conn:
+                first = conn
+                async with conn.execute("SELECT 1") as cur:
+                    result = await cur.fetchone()
+                    assert result[0] == 1
+                raise TestError()
+        async with pool.borrow() as conn:
+            async with conn.execute("SELECT 1") as cur:
+                result = await cur.fetchone()
+                assert result[0] == 1
+            second = conn
+        assert first is not second
+    finally:
+        await pool.stop()
+
