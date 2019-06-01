@@ -1,3 +1,4 @@
+import asyncio
 import enum
 from io import BytesIO
 
@@ -51,9 +52,13 @@ class STSResolver:
 
         # Try to fetch it
         try:
-            txt_records = await self._resolver.query(sts_txt_domain, 'TXT')
+            txt_records = await asyncio.wait_for(
+                self._resolver.query(sts_txt_domain, 'TXT'),
+                timeout=self._timeout)
         except aiodns.error.DNSError as error:
-            if error.args[0] == aiodns.error.ARES_ETIMEOUT:  # pylint: disable=no-else-return,no-member
+            if error.args[0] == aiodns.error.ARES_ETIMEOUT:  # pragma: no cover pylint: disable=no-else-return,no-member
+                # This branch is not covered because of aiodns bug:
+                # https://github.com/saghul/aiodns/pull/64
                 # It's hard to decide what to do in case of timeout
                 # Probably it's better to threat this as fetch error
                 # so caller probably shall report such cases.
@@ -64,6 +69,8 @@ class STSResolver:
                 return STSFetchResult.NONE, None
             else:  # pragma: no cover
                 return STSFetchResult.NONE, None
+        except asyncio.TimeoutError:
+            return STSFetchResult.FETCH_ERROR, None
 
         # workaround for floating return type of pycares
         txt_records = filter_text(rec.text for rec in txt_records)
