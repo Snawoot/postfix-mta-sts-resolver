@@ -48,6 +48,7 @@ install:
   - "sudo systemctl restart nginx || { sudo journalctl -xe ; false ; }"
   - "sudo install -m 644 -o root -g root tests/tinyproxy.conf /etc/tinyproxy.conf"
   - "sudo systemctl restart tinyproxy || { sudo journalctl -xe ; false ; }"
+  - "sudo tests/expedite_proxy_startup.sh || { sudo journalctl -xe ; false ; }"
   - "pip install tox"
 script:
   - tox
