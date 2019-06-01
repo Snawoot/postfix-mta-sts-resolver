@@ -80,7 +80,7 @@ class SqliteCache(BaseCache):
         self._threads = threads
         self._timeout = timeout
         sqlitelogger = logging.getLogger("aiosqlite")
-        if not sqlitelogger.hasHandlers():
+        if not sqlitelogger.hasHandlers():  # pragma: no cover
             sqlitelogger.addHandler(logging.NullHandler())
         self._pool = None
 
