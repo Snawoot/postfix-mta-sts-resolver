@@ -63,3 +63,5 @@ txt-record=_mta-sts.chunked-overlength.loc,"v=STSv1;id=20180907T090909;"
 
 address=/mta-sts.no-data.loc/127.0.0.1
 address=/_mta-sts.no-data.loc/127.0.0.1
+
+server=/blackhole.loc/240.0.0.1#5354
