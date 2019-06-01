@@ -107,3 +107,12 @@ async def test_conn_ressurection(dbfile):
     finally:
         await pool.stop()
 
+@pytest.mark.asyncio
+@pytest.mark.timeout(2)
+async def test_bad_init(dbfile):
+    pool = SqliteConnPool(1, (dbfile,), init_queries=['BOGUSQUERY'])
+    try:
+        with pytest.raises(Exception):
+            await pool.prepare()
+    finally:
+        await pool.stop()
