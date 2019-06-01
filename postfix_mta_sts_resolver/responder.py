@@ -140,9 +140,9 @@ class STSSocketmapResponder:
         async def cache_set(domain, entry):
             try:
                 await self._cache.set(domain, entry)
-            except asyncio.CancelledError:  # pylint: disable=try-except-raise
+            except asyncio.CancelledError:  # pragma: no cover pylint: disable=try-except-raise
                 raise
-            except Exception as exc:
+            except Exception as exc: # pragma: no cover
                 self._logger.exception("Cache set failed: %s", str(exc))
 
         have_policy = True
@@ -169,9 +169,9 @@ class STSSocketmapResponder:
         # Lookup for cached policy
         try:
             cached = await self._cache.get(domain)
-        except asyncio.CancelledError:  # pylint: disable=try-except-raise
+        except asyncio.CancelledError:  # pragma: no cover pylint: disable=try-except-raise
             raise
-        except Exception as exc:
+        except Exception as exc:  # pragma: no cover
             self._logger.exception("Cache get failed: %s", str(exc))
             cached = None
 
@@ -235,7 +235,7 @@ class STSSocketmapResponder:
         async def finalize():
             try:
                 await queue.put(None)
-            except asyncio.CancelledError:
+            except asyncio.CancelledError:  # pragma: no cover
                 sender.cancel()
                 raise
             await sender
@@ -263,7 +263,7 @@ class STSSocketmapResponder:
         except (EndOfStream, ConnectionError, TimeoutError):
             self._logger.debug("Client disconnected")
             await finalize()
-        except OSError as exc:
+        except OSError as exc:  # pragma: no cover
             if exc.errno == 107:
                 self._logger.debug("Client disconnected")
                 await finalize()
@@ -273,11 +273,6 @@ class STSSocketmapResponder:
         except asyncio.CancelledError:
             sender.cancel()
             raise
-        except Exception as exc:
+        except Exception as exc:  # pragma: no cover
             self._logger.exception("Unhandled exception: %s", exc)
             await finalize()
-        finally:
-            try:
-                writer.close()
-            except Exception:
-                pass
