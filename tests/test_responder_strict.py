@@ -47,7 +47,7 @@ reqresps = [
     (b'test bad-cert1.loc', b'NOTFOUND '),
     (b'test bad-cert2.loc', b'NOTFOUND '),
 ]
-@pytest.mark.parametrize("params", itertools.product(reqresps, buf_sizes))
+@pytest.mark.parametrize("params", tuple(itertools.product(reqresps, buf_sizes)))
 @pytest.mark.asyncio
 @pytest.mark.timeout(5)
 async def test_responder(responder, params):
