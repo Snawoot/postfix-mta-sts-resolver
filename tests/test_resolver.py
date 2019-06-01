@@ -87,7 +87,7 @@ async def test_resolve_dns_timeout(event_loop):
 @pytest.mark.asyncio
 @pytest.mark.timeout(5)
 async def test_proxy(event_loop):
-    with set_env(https_proxy='http://127.0.0.2:8888'):
+    with set_env(https_proxy='http://127.0.0.2:1380'):
         resolver = Resolver(loop=event_loop)
     status, (ver, pol) = await resolver.resolve("good.loc")
     assert status is FR.VALID

@@ -15,6 +15,7 @@ from async_generator import yield_, async_generator
 async def responder(event_loop):
     import postfix_mta_sts_resolver.utils as utils
     cfg = utils.populate_cfg_defaults(None)
+    cfg["port"] = 38461
     cfg["shutdown_timeout"] = 1
     cfg["cache_grace"] = 0
     cfg["zones"]["test2"] = cfg["default_zone"]
@@ -29,6 +30,32 @@ async def responder(event_loop):
 async def test_hanging_stop(responder):
     resp, host, port = responder
     reader, writer = await asyncio.open_connection(host, port)
+    await resp.stop()
+    assert await reader.read() == b''
+    writer.close()
+
+@pytest.mark.asyncio
+@pytest.mark.timeout(5)
+async def test_inprogress_stop(responder):
+    resp, host, port = responder
+    reader, writer = await asyncio.open_connection(host, port)
+    writer.write(pynetstring.encode(b'test blackhole.loc'))
+    await writer.drain()
+    await asyncio.sleep(0.2)
+    await resp.stop()
+    assert await reader.read() == b''
+    writer.close()
+
+@pytest.mark.asyncio
+@pytest.mark.timeout(5)
+async def test_extended_stop(responder):
+    resp, host, port = responder
+    reader, writer = await asyncio.open_connection(host, port)
+    writer.write(pynetstring.encode(b'test blackhole.loc'))
+    writer.write(pynetstring.encode(b'test blackhole.loc'))
+    writer.write(pynetstring.encode(b'test blackhole.loc'))
+    await writer.drain()
+    await asyncio.sleep(0.2)
     await resp.stop()
     assert await reader.read() == b''
     writer.close()
