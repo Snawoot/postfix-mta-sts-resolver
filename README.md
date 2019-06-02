@@ -1,7 +1,7 @@
 postfix-mta-sts-resolver
 ========================
 
-[![Build Status](https://travis-ci.org/Snawoot/postfix-mta-sts-resolver.svg?branch=master)](https://travis-ci.org/Snawoot/postfix-mta-sts-resolver)
+[![Build Status](https://travis-ci.org/Snawoot/postfix-mta-sts-resolver.svg?branch=master)](https://travis-ci.org/Snawoot/postfix-mta-sts-resolver) [![Coverage](https://img.shields.io/badge/coverage-100%25-4dc71f.svg)](https://travis-ci.org/Snawoot/postfix-mta-sts-resolver) [![PyPI - Downloads](https://img.shields.io/pypi/dm/postfix-mta-sts-resolver.svg?color=4dc71f&label=PyPI%20downloads)](https://pypistats.org/packages/postfix-mta-sts-resolver) [![PyPI](https://img.shields.io/pypi/v/postfix-mta-sts-resolver.svg)](https://pypi.org/project/postfix-mta-sts-resolver/) [![PyPI - Status](https://img.shields.io/pypi/status/postfix-mta-sts-resolver.svg)](https://pypi.org/project/postfix-mta-sts-resolver/) [![PyPI - License](https://img.shields.io/pypi/l/postfix-mta-sts-resolver.svg?color=4dc71f)](https://pypi.org/project/postfix-mta-sts-resolver/)
 
 Daemon which provides TLS client policy for Postfix via socketmap, according to domain MTA-STS policy. Current support of RFC8461 is limited - daemon lacks some minor features:
 
