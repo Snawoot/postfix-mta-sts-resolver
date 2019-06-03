@@ -13,6 +13,12 @@ matrix:
       env: TOXENV=py36
     - python: 3.7
       env: TOXENV=py37
+    - python: 3.5
+      env: TOXENV=py35-uvloop
+    - python: 3.6
+      env: TOXENV=py36-uvloop
+    - python: 3.7
+      env: TOXENV=py37-uvloop
 install:
   - "sudo apt-get update"
   - "sudo apt-get install redis-server dnsmasq lsof nginx-extras tinyproxy -y"
