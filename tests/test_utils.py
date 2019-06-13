@@ -2,6 +2,7 @@ import tempfile
 import collections.abc
 import enum
 import itertools
+import time
 
 import pytest
 import postfix_mta_sts_resolver.utils as utils
@@ -98,12 +99,25 @@ def test_filter_text(vector):
 
 def test_setup_logger():
     with tempfile.NamedTemporaryFile('r') as tmpfile:
-        logger = utils.setup_logger("test", utils.LogLevel.info, tmpfile.name)
-        logger.info("Hello World!")
-        assert "Hello World!" in tmpfile.read()
+        with utils.AsyncLoggingHandler(tmpfile.name) as log_handler:
+            logger = utils.setup_logger("test", utils.LogLevel.info, log_handler)
+            logger.info("Hello World!")
+            time.sleep(1)
+            assert "Hello World!" in tmpfile.read()
+
+def test_setup_logger_overflow():
+    with tempfile.NamedTemporaryFile('r') as tmpfile:
+        with utils.AsyncLoggingHandler(tmpfile.name, 1) as log_handler:
+            logger = utils.setup_logger("test", utils.LogLevel.info, log_handler)
+            for _ in range(10):
+                logger.info("Hello World!")
+            time.sleep(1)
+            assert "Hello World!" in tmpfile.read()
 
 def test_setup_logger_stderr(capsys):
-    logger = utils.setup_logger("test", utils.LogLevel.info)
-    logger.info("Hello World!")
-    captured = capsys.readouterr()
-    assert "Hello World!" in captured.err
+    with utils.AsyncLoggingHandler() as log_handler:
+        logger = utils.setup_logger("test", utils.LogLevel.info, log_handler)
+        logger.info("Hello World!")
+        time.sleep(1)
+        captured = capsys.readouterr()
+        assert "Hello World!" in captured.err
