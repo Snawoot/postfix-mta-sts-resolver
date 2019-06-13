@@ -84,25 +84,26 @@ async def amain(cfg, loop):  # pragma: no cover
 def main():  # pragma: no cover
     # Parse command line arguments and setup basic logging
     args = parse_args()
-    logger = utils.setup_logger('MAIN', args.verbosity, args.logfile)
-    utils.setup_logger('STS', args.verbosity, args.logfile)
-    logger.info("MTA-STS daemon starting...")
+    with utils.AsyncLoggingHandler(args.logfile) as log_handler:
+        logger = utils.setup_logger('MAIN', args.verbosity, log_handler)
+        utils.setup_logger('STS', args.verbosity, log_handler)
+        logger.info("MTA-STS daemon starting...")
 
-    # Read config and populate with defaults
-    cfg = utils.load_config(args.config)
+        # Read config and populate with defaults
+        cfg = utils.load_config(args.config)
 
-    # Construct event loop
-    logger.info("Starting eventloop...")
-    if not args.disable_uvloop:
-        if utils.enable_uvloop():
-            logger.info("uvloop enabled.")
-        else:
-            logger.info("uvloop is not available. "
-                        "Falling back to built-in event loop.")
-    evloop = asyncio.get_event_loop()
-    logger.info("Eventloop started.")
+        # Construct event loop
+        logger.info("Starting eventloop...")
+        if not args.disable_uvloop:
+            if utils.enable_uvloop():
+                logger.info("uvloop enabled.")
+            else:
+                logger.info("uvloop is not available. "
+                            "Falling back to built-in event loop.")
+        evloop = asyncio.get_event_loop()
+        logger.info("Eventloop started.")
 
 
-    evloop.run_until_complete(amain(cfg, evloop))
-    evloop.close()
-    logger.info("Server finished its work.")
+        evloop.run_until_complete(amain(cfg, evloop))
+        evloop.close()
+        logger.info("Server finished its work.")
