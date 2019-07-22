@@ -23,8 +23,13 @@ class STSSocketmapResponder:
     def __init__(self, cfg, loop):
         self._logger = logging.getLogger("STS")
         self._loop = loop
-        self._host = cfg['host']
-        self._port = cfg['port']
+        if cfg.get('path') is not None:
+            self._unix = True
+            self._path = cfg['path']
+        else:
+            self._unix = False
+            self._host = cfg['host']
+            self._port = cfg['port']
         self._reuse_port = cfg['reuse_port']
         self._shutdown_timeout = cfg['shutdown_timeout']
         self._grace = cfg['cache_grace']
@@ -56,32 +61,35 @@ class STSSocketmapResponder:
 
         await self._cache.setup()
 
-        if self._reuse_port: # pragma: no cover
-            if sys.platform in ('win32', 'cygwin'):
-                opts = {
-                    'host': self._host,
-                    'port': self._port,
-                    'reuse_address': True,
-                }
-            elif os.name == 'posix':
-                if sys.platform.startswith('freebsd'):
-                    sockopts = [
-                        (socket.SOL_SOCKET, socket.SO_REUSEADDR, 1),
-                        (socket.SOL_SOCKET, 0x10000, 1),  # SO_REUSEPORT_LB
-                    ]
-                    sock = await create_custom_socket(self._host, self._port,
-                                                      options=sockopts)
-                    opts = {
-                        'sock': sock,
-                    }
-                else:
+        if self._unix:
+            self._server = await asyncio.start_unix_server(_spawn, path=self._path)
+        else:
+            if self._reuse_port: # pragma: no cover
+                if sys.platform in ('win32', 'cygwin'):
                     opts = {
                         'host': self._host,
                         'port': self._port,
                         'reuse_address': True,
-                        'reuse_port': True,
                     }
-        self._server = await asyncio.start_server(_spawn, **opts)
+                elif os.name == 'posix':
+                    if sys.platform.startswith('freebsd'):
+                        sockopts = [
+                            (socket.SOL_SOCKET, socket.SO_REUSEADDR, 1),
+                            (socket.SOL_SOCKET, 0x10000, 1),  # SO_REUSEPORT_LB
+                        ]
+                        sock = await create_custom_socket(self._host, self._port,
+                                                          options=sockopts)
+                        opts = {
+                            'sock': sock,
+                        }
+                    else:
+                        opts = {
+                            'host': self._host,
+                            'port': self._port,
+                            'reuse_address': True,
+                            'reuse_port': True,
+                        }
+            self._server = await asyncio.start_server(_spawn, **opts)
 
     async def stop(self):
         self._server.close()
