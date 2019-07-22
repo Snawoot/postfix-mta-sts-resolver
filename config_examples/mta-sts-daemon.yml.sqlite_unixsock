@@ -1,0 +1,13 @@
+path: "/var/run/mta-sts.sock"
+shutdown_timeout: 20
+cache:
+  type: sqlite
+  options:
+    filename: "/var/lib/mta-sts/cache.db"
+default_zone:
+  strict_testing: false
+  timeout: 4
+zones:
+  myzone:
+    strict_testing: false
+    timeout: 4
