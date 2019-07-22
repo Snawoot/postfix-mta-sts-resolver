@@ -20,6 +20,8 @@ The file is in YAML syntax with the following elements:
 
 *port*: (_int_) daemon bind port
 
+*path*: (_str_) daemon UNIX socket bind address (path). If specified, *host* and *port* are ignored and UNIX socket is bound instead of TCP.
+
 *reuse_port*: (_bool_) allow multiple instances to share same port (available on Unix, Windows)
 
 *cache_grace*: (_float_) age of cache entries in seconds which do not require policy refresh and update. Default: 60

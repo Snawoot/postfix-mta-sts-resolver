@@ -22,6 +22,18 @@ async def responder(event_loop):
     await yield_(result)
     await resp.stop()
 
+@pytest.fixture(scope="module")
+@async_generator
+async def unix_responder(event_loop):
+    import postfix_mta_sts_resolver.utils as utils
+    cfg = utils.populate_cfg_defaults({'path': '/tmp/mta-sts.sock'})
+    cfg["zones"]["test2"] = cfg["default_zone"]
+    resp = STSSocketmapResponder(cfg, event_loop)
+    await resp.start()
+    result = resp, cfg['path']
+    await yield_(result)
+    await resp.stop()
+
 buf_sizes = [4096, 128, 16, 1]
 reqresps = [
     (b'test good.loc', b'OK secure match=mail.loc'),
@@ -40,7 +52,8 @@ reqresps = [
     (b'test bad-cert1.loc', b'NOTFOUND '),
     (b'test bad-cert2.loc', b'NOTFOUND '),
 ]
-@pytest.mark.parametrize("params", tuple(itertools.product(reqresps, buf_sizes)))
+bufreq_pairs = tuple(itertools.product(reqresps, buf_sizes))
+@pytest.mark.parametrize("params", bufreq_pairs)
 @pytest.mark.asyncio
 @pytest.mark.timeout(5)
 async def test_responder(responder, params):
@@ -48,6 +61,26 @@ async def test_responder(responder, params):
     resp, host, port = responder
     decoder = pynetstring.Decoder()
     reader, writer = await asyncio.open_connection(host, port)
+    try:
+        writer.write(pynetstring.encode(request))
+        while True:
+            data = await reader.read(bufsize)
+            assert data
+            res = decoder.feed(data)
+            if res:
+                assert res[0] == response
+                break
+    finally:
+        writer.close()
+
+@pytest.mark.parametrize("params", tuple(itertools.product(reqresps, buf_sizes)))
+@pytest.mark.asyncio
+@pytest.mark.timeout(5)
+async def test_unix_responder(unix_responder, params):
+    (request, response), bufsize = params
+    resp, path = unix_responder
+    decoder = pynetstring.Decoder()
+    reader, writer = await asyncio.open_unix_connection(path)
     try:
         writer.write(pynetstring.encode(request))
         while True:

@@ -77,8 +77,9 @@ def populate_cfg_defaults(cfg):
     if not cfg:
         cfg = {}
 
-    cfg['host'] = cfg.get('host', defaults.HOST)
-    cfg['port'] = cfg.get('port', defaults.PORT)
+    if cfg.get('path') is None:
+        cfg['host'] = cfg.get('host', defaults.HOST)
+        cfg['port'] = cfg.get('port', defaults.PORT)
     cfg['reuse_port'] = cfg.get('reuse_port', defaults.REUSE_PORT)
     cfg['shutdown_timeout'] = cfg.get('shutdown_timeout',
                                       defaults.SHUTDOWN_TIMEOUT)
