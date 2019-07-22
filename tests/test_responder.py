@@ -73,24 +73,6 @@ async def test_responder(responder, params):
     finally:
         writer.close()
 
-buf_sizes = [4096, 128, 16, 1]
-reqresps = [
-    (b'test good.loc', b'OK secure match=mail.loc'),
-    (b'test2 good.loc', b'OK secure match=mail.loc'),
-    (b'test good.loc.', b'OK secure match=mail.loc'),
-    (b'test .good.loc', b'NOTFOUND '),
-    (b'test valid-none.loc', b'NOTFOUND '),
-    (b'test testing.loc', b'NOTFOUND '),
-    (b'test no-record.loc', b'NOTFOUND '),
-    (b'test .no-record.loc', b'NOTFOUND '),
-    (b'test bad-record1.loc', b'NOTFOUND '),
-    (b'test bad-record2.loc', b'NOTFOUND '),
-    (b'test bad-policy1.loc', b'NOTFOUND '),
-    (b'test bad-policy2.loc', b'NOTFOUND '),
-    (b'test bad-policy3.loc', b'NOTFOUND '),
-    (b'test bad-cert1.loc', b'NOTFOUND '),
-    (b'test bad-cert2.loc', b'NOTFOUND '),
-]
 @pytest.mark.parametrize("params", tuple(itertools.product(reqresps, buf_sizes)))
 @pytest.mark.asyncio
 @pytest.mark.timeout(5)
