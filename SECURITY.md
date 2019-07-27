@@ -4,10 +4,7 @@
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 0.5.x   | :white_check_mark: |
-| 0.4.x   | :white_check_mark: |
-| 0.3.0   | :white_check_mark: |
-| 0.2.9   | :white_check_mark: |
+| > 0.2.9 | :heavy_check_mark: |
 | < 0.2.9 | :x:                |
 
 Since new versions are backwards compatible with all older versions only few recent versions are supported. In case of security problem with old unsupported version recommended solution is an upgrade.
