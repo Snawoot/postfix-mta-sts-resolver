@@ -37,7 +37,7 @@ async def unix_responder(event_loop):
     await resp.stop()
 
 buf_sizes = [4096, 128, 16, 1]
-reqresps = load_testdata('refdata')
+reqresps = list(load_testdata('refdata'))
 bufreq_pairs = tuple(itertools.product(reqresps, buf_sizes))
 @pytest.mark.parametrize("params", bufreq_pairs)
 @pytest.mark.asyncio

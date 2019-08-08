@@ -20,41 +20,6 @@ matrix:
     - python: 3.7
       env: TOXENV=py37-uvloop
 install:
-  - "sudo apt-get update"
-  - "sudo apt-get install redis-server dnsmasq lsof nginx-extras tinyproxy -y"
-  - "sudo systemctl start redis-server || { sudo journalctl -xe ; false ; }"
-  - "sudo lsof -ni :53"
-  - "sudo cat /etc/resolv.conf"
-  - "sudo install -m 644 tests/resolv.conf /etc/resolv-dnsmasq.conf"
-  - "cat tests/dnsmasq.conf.appendix | sudo tee -a /etc/dnsmasq.conf > /dev/null"
-  - "sudo systemctl restart dnsmasq || { sudo journalctl -xe ; false ; }"
-  - "sudo install -m 644 tests/nginx.conf /etc/nginx/nginx.conf"
-  - "pip install cryptography"
-  - "mkdir -p /tmp/certs /tmp/bad-certs"
-  - "tests/mkcerts.py -o /tmp/certs 
-  -D good.loc mta-sts.good.loc 
-  -D bad-policy1.loc mta-sts.bad-policy1.loc 
-  -D bad-policy2.loc mta-sts.bad-policy2.loc 
-  -D bad-policy3.loc mta-sts.bad-policy3.loc 
-  -D bad-policy4.loc mta-sts.bad-policy4.loc 
-  -D bad-policy5.loc mta-sts.bad-policy5.loc 
-  -D bad-policy6.loc mta-sts.bad-policy6.loc 
-  -D bad-policy7.loc mta-sts.bad-policy7.loc 
-  -D bad-policy8.loc mta-sts.bad-policy8.loc 
-  -D bad-cert2.loc
-  -D valid-none.loc mta-sts.valid-none.loc
-  -D mta-sts.testing.loc
-  -D chunked-overlength.loc mta-sts.chunked-overlength.loc
-  -D static-overlength.loc mta-sts.static-overlength.loc
-  -D fast-expire.loc *.fast-expire.loc"
-  - "tests/mkcerts.py -o /tmp/bad-certs -D bad-cert1.loc mta-sts.bad-cert1.loc"
-  - "sudo mkdir -p /usr/local/share/ca-certificates/test"
-  - "sudo install -m 644 -o root -g root /tmp/certs/ca.pem /usr/local/share/ca-certificates/test/test-ca.crt"
-  - "sudo update-ca-certificates"
-  - "sudo systemctl restart nginx || { sudo journalctl -xe ; false ; }"
-  - "sudo install -m 644 -o root -g root tests/tinyproxy.conf /etc/tinyproxy.conf"
-  - "sudo systemctl restart tinyproxy || { sudo journalctl -xe ; false ; }"
-  - "sudo tests/expedite_proxy_startup.sh || { sudo journalctl -xe ; false ; }"
-  - "pip install tox"
+  - "sudo -H env PYTHON=\"$(command -v python)\" tests/install.debian.sh"
 script:
   - tox
