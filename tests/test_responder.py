@@ -10,6 +10,8 @@ from postfix_mta_sts_resolver.responder import STSSocketmapResponder
 import postfix_mta_sts_resolver.utils as utils
 from async_generator import yield_, async_generator
 
+from testdata import load_testdata
+
 @pytest.fixture(scope="module")
 @async_generator
 async def responder(event_loop):
@@ -35,23 +37,7 @@ async def unix_responder(event_loop):
     await resp.stop()
 
 buf_sizes = [4096, 128, 16, 1]
-reqresps = [
-    (b'test good.loc', b'OK secure match=mail.loc'),
-    (b'test2 good.loc', b'OK secure match=mail.loc'),
-    (b'test good.loc.', b'OK secure match=mail.loc'),
-    (b'test .good.loc', b'NOTFOUND '),
-    (b'test valid-none.loc', b'NOTFOUND '),
-    (b'test testing.loc', b'NOTFOUND '),
-    (b'test no-record.loc', b'NOTFOUND '),
-    (b'test .no-record.loc', b'NOTFOUND '),
-    (b'test bad-record1.loc', b'NOTFOUND '),
-    (b'test bad-record2.loc', b'NOTFOUND '),
-    (b'test bad-policy1.loc', b'NOTFOUND '),
-    (b'test bad-policy2.loc', b'NOTFOUND '),
-    (b'test bad-policy3.loc', b'NOTFOUND '),
-    (b'test bad-cert1.loc', b'NOTFOUND '),
-    (b'test bad-cert2.loc', b'NOTFOUND '),
-]
+reqresps = load_testdata('refdata')
 bufreq_pairs = tuple(itertools.product(reqresps, buf_sizes))
 @pytest.mark.parametrize("params", bufreq_pairs)
 @pytest.mark.asyncio
