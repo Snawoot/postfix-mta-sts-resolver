@@ -26,7 +26,7 @@ async def responder(event_loop):
     await resp.stop()
 
 buf_sizes = [4096, 128, 16, 1]
-reqresps = load_testdata('refdata_strict')
+reqresps = list(load_testdata('refdata_strict'))
 @pytest.mark.parametrize("params", tuple(itertools.product(reqresps, buf_sizes)))
 @pytest.mark.asyncio
 @pytest.mark.timeout(5)
