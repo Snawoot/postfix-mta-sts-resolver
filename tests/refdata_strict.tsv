@@ -1,0 +1,15 @@
+test good.loc	OK secure match=mail.loc
+test2 good.loc	OK secure match=mail.loc
+test good.loc.	OK secure match=mail.loc
+test .good.loc	NOTFOUND 
+test valid-none.loc	NOTFOUND 
+test testing.loc	OK secure match=mail.loc
+test no-record.loc	NOTFOUND 
+test .no-record.loc	NOTFOUND 
+test bad-record1.loc	NOTFOUND 
+test bad-record2.loc	NOTFOUND 
+test bad-policy1.loc	NOTFOUND 
+test bad-policy2.loc	NOTFOUND 
+test bad-policy3.loc	NOTFOUND 
+test bad-cert1.loc	NOTFOUND 
+test bad-cert2.loc	NOTFOUND 

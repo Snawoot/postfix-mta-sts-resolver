@@ -5,6 +5,7 @@ import pytest
 
 from postfix_mta_sts_resolver.utils import enable_uvloop
 
+
 @pytest.fixture(scope="session")
 def event_loop():
     uvloop_test = os.environ['TOXENV'].endswith('-uvloop')
@@ -13,4 +14,3 @@ def event_loop():
     loop = asyncio.get_event_loop()
     yield loop
     loop.close()
-
