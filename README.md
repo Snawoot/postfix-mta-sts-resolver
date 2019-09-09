@@ -68,7 +68,7 @@ Run
 
 ```bash
 docker volume create mta-sts-cache
-docker run -dit \
+docker run -d \
     -v mta-sts-cache:/var/lib/mta-sts \
     -p 127.0.0.1:8461:8461 \
     --restart unless-stopped \
