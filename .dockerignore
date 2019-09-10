@@ -3,3 +3,4 @@ pkg_venv
 *.egg-info
 contrib
 config_examples
+Dockerfile
