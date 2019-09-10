@@ -22,8 +22,7 @@ WORKDIR /build
 RUN true \
    && apk add --no-cache --virtual .build-deps alpine-sdk libffi-dev \
    && apk add --no-cache libffi \
-   && pip3 install --no-cache-dir .[sqlite,redis] \
-   && pip3 install --no-cache-dir uvloop \
+   && pip3 install --no-cache-dir .[sqlite,redis,uvloop] \
    && mkdir /var/lib/mta-sts \
    && chown -R "$USER:$USER" /build /var/lib/mta-sts \
    && apk del .build-deps \
