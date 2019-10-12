@@ -26,6 +26,7 @@ class STSSocketmapResponder:
         if cfg.get('path') is not None:
             self._unix = True
             self._path = cfg['path']
+            self._sockmode = cfg.get('mode')
         else:
             self._unix = False
             self._host = cfg['host']
@@ -63,6 +64,8 @@ class STSSocketmapResponder:
 
         if self._unix:
             self._server = await asyncio.start_unix_server(_spawn, path=self._path)
+            if self._sockmode is not None:
+                os.chmod(self._path, self._sockmode)
         else:
             if self._reuse_port: # pragma: no cover
                 if sys.platform in ('win32', 'cygwin'):

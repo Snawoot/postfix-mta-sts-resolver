@@ -2,6 +2,7 @@ import sys
 import asyncio
 import itertools
 import socket
+import os
 
 import pynetstring
 import pytest
@@ -28,7 +29,7 @@ async def responder(event_loop):
 @async_generator
 async def unix_responder(event_loop):
     import postfix_mta_sts_resolver.utils as utils
-    cfg = utils.populate_cfg_defaults({'path': '/tmp/mta-sts.sock'})
+    cfg = utils.populate_cfg_defaults({'path': '/tmp/mta-sts.sock', 'mode': 0o666})
     cfg["zones"]["test2"] = cfg["default_zone"]
     resp = STSSocketmapResponder(cfg, event_loop)
     await resp.start()
@@ -65,6 +66,7 @@ async def test_responder(responder, params):
 async def test_unix_responder(unix_responder, params):
     (request, response), bufsize = params
     resp, path = unix_responder
+    assert os.stat(path).st_mode & 0o777 == 0o666
     decoder = pynetstring.Decoder()
     reader, writer = await asyncio.open_unix_connection(path)
     try:

@@ -22,6 +22,8 @@ The file is in YAML syntax with the following elements:
 
 *path*: (_str_) daemon UNIX socket bind address (path). If specified, *host* and *port* are ignored and UNIX socket is bound instead of TCP.
 
+*mode*: (_int_) file mode for daemon UNIX socket. If not specified default filemode is used. This option has effect only when UNIX socket is used. If file mode specified in octal form (most common case), it has to be prepended with leading zero. Example: 0666
+
 *reuse_port*: (_bool_) allow multiple instances to share same port (available on Unix, Windows)
 
 *cache_grace*: (_float_) age of cache entries in seconds which do not require policy refresh and update. Default: 60
