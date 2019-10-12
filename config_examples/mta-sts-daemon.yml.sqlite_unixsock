@@ -1,4 +1,5 @@
 path: "/var/run/mta-sts.sock"
+mode: 0666
 shutdown_timeout: 20
 cache:
   type: sqlite
