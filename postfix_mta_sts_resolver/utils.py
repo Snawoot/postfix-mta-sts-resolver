@@ -182,12 +182,15 @@ async def create_custom_socket(host, port, *,  # pylint: disable=too-many-locals
 
 def create_cache(cache_type, options):
     if cache_type == "internal":
+        # pylint: disable=import-outside-toplevel
         from . import internal_cache
         cache = internal_cache.InternalLRUCache(**options)
     elif cache_type == "sqlite":
+        # pylint: disable=import-outside-toplevel
         from . import sqlite_cache
         cache = sqlite_cache.SqliteCache(**options)
     elif cache_type == "redis":
+        # pylint: disable=import-outside-toplevel
         from . import redis_cache
         cache = redis_cache.RedisCache(**options)
     else:
