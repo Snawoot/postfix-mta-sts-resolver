@@ -147,6 +147,24 @@ def is_plaintext(contenttype):
     return contenttype.lower().partition(';')[0].strip() == 'text/plain'
 
 
+def is_ipaddr(addr):
+    try:
+        socket.getaddrinfo(addr, None, flags=socket.AI_NUMERICHOST)
+        return True
+    except socket.gaierror:
+        return False
+
+
+def filter_domain(domain):
+    lpart, found_separator, rpart = domain.partition(']')
+    res = lpart.lstrip('[')
+    if not found_separator:
+        lpart, found_separator, rpart = domain.rpartition(':')
+        res = lpart if found_separator else rpart
+
+    return res.lower().strip().rstrip('.')
+
+
 def filter_text(strings):
     for string in strings:
         if isinstance(string, str):
@@ -179,6 +197,7 @@ async def create_custom_socket(host, port, *,  # pylint: disable=too-many-locals
 
     sock.bind(sa)
     return sock
+
 
 def create_cache(cache_type, options):
     if cache_type == "internal":
