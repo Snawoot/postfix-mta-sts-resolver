@@ -11,7 +11,7 @@ import pynetstring
 
 from .resolver import STSResolver, STSFetchResult
 from .constants import QUEUE_LIMIT, CHUNK
-from .utils import create_custom_socket, create_cache
+from .utils import create_custom_socket, create_cache, filter_domain, is_ipaddr
 from .base_cache import CacheEntry
 
 
@@ -160,16 +160,12 @@ class STSSocketmapResponder:
 
         # Parse request and canonicalize domain
         req_zone, _, req_domain = raw_req.decode('latin-1').partition(' ')
-
-        domain = req_domain
+        domain = filter_domain(req_domain)
 
         # Skip lookups for parent domain policies
-        # Skip lookups to non-recepient domains or non-domains at all
-        if domain.startswith('.') or domain.startswith('[') or ':' in domain:
+        # Skip lookups to non-domains
+        if domain.startswith('.') or is_ipaddr(domain):
             return pynetstring.encode('NOTFOUND ')
-
-        # Normalize domain name
-        domain = req_domain.lower().strip().rstrip('.')
 
         # Find appropriate zone config
         if req_zone in self._zones:

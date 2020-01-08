@@ -1,11 +1,17 @@
 test good.loc	OK secure match=mail.loc
+test [good.loc]	OK secure match=mail.loc
+test [good.loc]:123	OK secure match=mail.loc
+test good.loc:123	OK secure match=mail.loc
 test2 good.loc	OK secure match=mail.loc
 test good.loc.	OK secure match=mail.loc
 test .good.loc	NOTFOUND 
 test valid-none.loc	NOTFOUND 
 test testing.loc	OK secure match=mail.loc
 test no-record.loc	NOTFOUND 
+test [no-record.loc]	NOTFOUND 
 test .no-record.loc	NOTFOUND 
+test [1.2.3.4]	NOTFOUND 
+test [a:bb:ccc::dddd]:123	NOTFOUND 
 test bad-record1.loc	NOTFOUND 
 test bad-record2.loc	NOTFOUND 
 test bad-policy1.loc	NOTFOUND 
