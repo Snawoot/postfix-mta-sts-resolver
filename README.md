@@ -20,7 +20,6 @@ Server has configurable cache backend which allows to store cached STS policies 
 * aiohttp
 * aiosqlite
 * aioredis
-* pynetstring
 * PyYAML
 * (optional) uvloop
 

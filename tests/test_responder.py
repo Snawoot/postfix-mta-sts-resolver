@@ -4,9 +4,9 @@ import itertools
 import socket
 import os
 
-import pynetstring
 import pytest
 
+from postfix_mta_sts_resolver import netstring
 from postfix_mta_sts_resolver.responder import STSSocketmapResponder
 import postfix_mta_sts_resolver.utils as utils
 from async_generator import yield_, async_generator
@@ -46,17 +46,24 @@ bufreq_pairs = tuple(itertools.product(reqresps, buf_sizes))
 async def test_responder(responder, params):
     (request, response), bufsize = params
     resp, host, port = responder
-    decoder = pynetstring.Decoder()
+    stream_reader = netstring.StreamReader()
+    string_reader = stream_reader.next_string()
     reader, writer = await asyncio.open_connection(host, port)
     try:
-        writer.write(pynetstring.encode(request))
+        writer.write(netstring.encode(request))
+        res = b''
         while True:
-            data = await reader.read(bufsize)
-            assert data
-            res = decoder.feed(data)
-            if res:
-                assert res[0] == response
-                break
+            try:
+                part = string_reader.read()
+            except netstring.WantRead:
+                buf = await reader.read(bufsize)
+                assert buf
+                stream_reader.feed(buf)
+            else:
+                if not part:
+                    break
+                res += part
+        assert res == response
     finally:
         writer.close()
 
@@ -66,18 +73,25 @@ async def test_responder(responder, params):
 async def test_unix_responder(unix_responder, params):
     (request, response), bufsize = params
     resp, path = unix_responder
+    stream_reader = netstring.StreamReader()
+    string_reader = stream_reader.next_string()
     assert os.stat(path).st_mode & 0o777 == 0o666
-    decoder = pynetstring.Decoder()
     reader, writer = await asyncio.open_unix_connection(path)
     try:
-        writer.write(pynetstring.encode(request))
+        writer.write(netstring.encode(request))
+        res = b''
         while True:
-            data = await reader.read(bufsize)
-            assert data
-            res = decoder.feed(data)
-            if res:
-                assert res[0] == response
-                break
+            try:
+                part = string_reader.read()
+            except netstring.WantRead:
+                data = await reader.read(bufsize)
+                assert data
+                stream_reader.feed(data)
+            else:
+                if not part:
+                    break
+                res += part
+        assert res == response
     finally:
         writer.close()
 
@@ -93,7 +107,7 @@ async def test_empty_dialog(responder):
 async def test_corrupt_dialog(responder):
     resp, host, port = responder
     reader, writer = await asyncio.open_connection(host, port)
-    msg = pynetstring.encode(b'test good.loc')[:-1] + b'!'
+    msg = netstring.encode(b'test good.loc')[:-1] + b'!'
     writer.write(msg)
     assert await reader.read() == b''
     writer.close()
@@ -103,27 +117,34 @@ async def test_corrupt_dialog(responder):
 async def test_early_disconnect(responder):
     resp, host, port = responder
     reader, writer = await asyncio.open_connection(host, port)
-    writer.write(pynetstring.encode(b'test good.loc'))
+    writer.write(netstring.encode(b'test good.loc'))
     writer.close()
 
 @pytest.mark.asyncio
 @pytest.mark.timeout(5)
 async def test_cached(responder):
     resp, host, port = responder
-    decoder = pynetstring.Decoder()
     reader, writer = await asyncio.open_connection(host, port)
-    writer.write(pynetstring.encode(b'test good.loc'))
-    writer.write(pynetstring.encode(b'test good.loc'))
+    stream_reader = netstring.StreamReader()
+    writer.write(netstring.encode(b'test good.loc'))
+    writer.write(netstring.encode(b'test good.loc'))
     answers = []
     try:
-        while True:
-            data = await reader.read(4096)
-            assert data
-            res = decoder.feed(data)
-            if res:
-                answers += res
-                if len(answers) == 2:
-                    break
+        for _ in range(2):
+            string_reader = stream_reader.next_string()
+            res = b''
+            while True:
+                try:
+                    part = string_reader.read()
+                except netstring.WantRead:
+                    data = await reader.read(4096)
+                    assert data
+                    stream_reader.feed(data)
+                else:
+                    if not part:
+                        break
+                    res += part
+            answers.append(res)
         assert answers[0] == answers[1]
     finally:
         writer.close()
@@ -132,20 +153,28 @@ async def test_cached(responder):
 @pytest.mark.timeout(7)
 async def test_fast_expire(responder):
     resp, host, port = responder
-    decoder = pynetstring.Decoder()
     reader, writer = await asyncio.open_connection(host, port)
+    stream_reader = netstring.StreamReader()
     async def answer():
+        string_reader = stream_reader.next_string()
+        res = b''
         while True:
-            data = await reader.read(4096)
-            assert data
-            res = decoder.feed(data)
-            if res:
-                return res[0]
+            try:
+                part = string_reader.read()
+            except netstring.WantRead:
+                data = await reader.read(4096)
+                assert data
+                stream_reader.feed(data)
+            else:
+                if not part:
+                    break
+                res += part
+        return res
     try:
-        writer.write(pynetstring.encode(b'test fast-expire.loc'))
+        writer.write(netstring.encode(b'test fast-expire.loc'))
         answer_a = await answer()
         await asyncio.sleep(2)
-        writer.write(pynetstring.encode(b'test fast-expire.loc'))
+        writer.write(netstring.encode(b'test fast-expire.loc'))
         answer_b = await answer()
         assert answer_a == answer_b == b'OK secure match=mail.loc'
     finally:
@@ -157,19 +186,26 @@ async def test_fast_expire(responder):
 async def test_responder_with_custom_socket(event_loop, responder, params):
     (request, response), bufsize = params
     resp, host, port = responder
-    decoder = pynetstring.Decoder()
     sock = await utils.create_custom_socket(host, 0, flags=0,
                                             options=[(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)])
+    stream_reader = netstring.StreamReader()
+    string_reader = stream_reader.next_string()
     await event_loop.run_in_executor(None, sock.connect, (host, port))
     reader, writer = await asyncio.open_connection(sock=sock)
     try:
-        writer.write(pynetstring.encode(request))
+        writer.write(netstring.encode(request))
+        res = b''
         while True:
-            data = await reader.read(bufsize)
-            assert data
-            res = decoder.feed(data)
-            if res:
-                assert res[0] == response
-                break
+            try:
+                part = string_reader.read()
+            except netstring.WantRead:
+                data = await reader.read(bufsize)
+                assert data
+                stream_reader.feed(data)
+            else:
+                if not part:
+                    break
+                res += part
+        assert res == response
     finally:
         writer.close()

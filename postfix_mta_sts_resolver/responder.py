@@ -7,12 +7,11 @@ import os
 import socket
 from functools import partial
 
-import pynetstring
-
 from .resolver import STSResolver, STSFetchResult
-from .constants import QUEUE_LIMIT, CHUNK
+from .constants import QUEUE_LIMIT, CHUNK, REQUEST_LIMIT
 from .utils import create_custom_socket, create_cache, filter_domain, is_ipaddr
 from .base_cache import CacheEntry
+from . import netstring
 
 
 ZoneEntry = collections.namedtuple('ZoneEntry', ('strict', 'resolver'))
@@ -159,13 +158,13 @@ class STSSocketmapResponder:
         have_policy = True
 
         # Parse request and canonicalize domain
-        req_zone, _, req_domain = raw_req.decode('latin-1').partition(' ')
+        req_zone, _, req_domain = raw_req.decode('ascii').partition(' ')
         domain = filter_domain(req_domain)
 
         # Skip lookups for parent domain policies
         # Skip lookups to non-domains
         if domain.startswith('.') or is_ipaddr(domain):
-            return pynetstring.encode('NOTFOUND ')
+            return netstring.encode(b'NOTFOUND ')
 
         # Find appropriate zone config
         if req_zone in self._zones:
@@ -214,27 +213,24 @@ class STSSocketmapResponder:
             mode = cached.pol_body['mode']
             # pylint: disable=no-else-return
             if mode == 'none' or (mode == 'testing' and not zone_cfg.strict):
-                return pynetstring.encode('NOTFOUND ')
+                return netstring.encode(b'NOTFOUND ')
             else:
                 assert cached.pol_body['mx'], "Empty MX list for restrictive policy!"
                 mxlist = [mx.lstrip('*') for mx in set(cached.pol_body['mx'])]
                 resp = "OK secure match=" + ":".join(mxlist)
-                return pynetstring.encode(resp)
+                return netstring.encode(resp.encode('utf-8'))
         else:
-            return pynetstring.encode('NOTFOUND ')
+            return netstring.encode(b'NOTFOUND ')
 
     async def handler(self, reader, writer):
         # Construct netstring parser
-        decoder = pynetstring.Decoder()
+        stream_reader = netstring.StreamReader(REQUEST_LIMIT)
 
         # Construct queue for responses ordering
         queue = asyncio.Queue(QUEUE_LIMIT, loop=self._loop)
 
         # Create coroutine which awaits for steady responses and sends them
         sender = asyncio.ensure_future(self.sender(queue, writer), loop=self._loop)
-
-        class ParserInvokationError(Exception):
-            pass
 
         class EndOfStream(Exception):
             pass
@@ -249,22 +245,28 @@ class STSSocketmapResponder:
 
         try:
             while True:
-                #Extract and parse requests
-                part = await reader.read(CHUNK)
-                if not part:
-                    raise EndOfStream()
-                self._logger.debug("Read: %s", repr(part))
-                try:
-                    requests = decoder.feed(part)
-                except:
-                    raise ParserInvokationError("Bad netstring protocol.")
-
-                # Enqueue tasks for received requests
-                for req in requests:
-                    self._logger.debug("Enq request: %s", repr(req))
-                    fut = asyncio.ensure_future(self.process_request(req), loop=self._loop)
-                    await queue.put(fut)
-        except ParserInvokationError:
+                # Extract and parse request
+                string_reader = stream_reader.next_string()
+                request_parts = []
+                while True:
+                    try:
+                        buf = string_reader.read()
+                    except netstring.WantRead:
+                        part = await reader.read(CHUNK)
+                        if not part:
+                            raise EndOfStream()
+                        self._logger.debug("Read: %s", repr(part))
+                        stream_reader.feed(part)
+                    else:
+                        if buf:
+                            request_parts.append(buf)
+                        else:
+                            req = b''.join(request_parts)
+                            self._logger.debug("Enq request: %s", repr(req))
+                            fut = asyncio.ensure_future(self.process_request(req), loop=self._loop)
+                            await queue.put(fut)
+                            break
+        except netstring.ParseError:
             self._logger.warning("Bad netstring message received")
             await finalize()
         except (EndOfStream, ConnectionError, TimeoutError):

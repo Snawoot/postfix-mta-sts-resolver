@@ -3,9 +3,9 @@ import asyncio
 import itertools
 import socket
 
-import pynetstring
 import pytest
 
+from postfix_mta_sts_resolver import netstring
 from postfix_mta_sts_resolver.responder import STSSocketmapResponder
 import postfix_mta_sts_resolver.utils as utils
 from async_generator import yield_, async_generator
@@ -39,7 +39,7 @@ async def test_hanging_stop(responder):
 async def test_inprogress_stop(responder):
     resp, host, port = responder
     reader, writer = await asyncio.open_connection(host, port)
-    writer.write(pynetstring.encode(b'test blackhole.loc'))
+    writer.write(netstring.encode(b'test blackhole.loc'))
     await writer.drain()
     await asyncio.sleep(0.2)
     await resp.stop()
@@ -51,9 +51,9 @@ async def test_inprogress_stop(responder):
 async def test_extended_stop(responder):
     resp, host, port = responder
     reader, writer = await asyncio.open_connection(host, port)
-    writer.write(pynetstring.encode(b'test blackhole.loc'))
-    writer.write(pynetstring.encode(b'test blackhole.loc'))
-    writer.write(pynetstring.encode(b'test blackhole.loc'))
+    writer.write(netstring.encode(b'test blackhole.loc'))
+    writer.write(netstring.encode(b'test blackhole.loc'))
+    writer.write(netstring.encode(b'test blackhole.loc'))
     await writer.drain()
     await asyncio.sleep(0.2)
     await resp.stop()
@@ -64,20 +64,28 @@ async def test_extended_stop(responder):
 @pytest.mark.timeout(7)
 async def test_grace_expired(responder):
     resp, host, port = responder
-    decoder = pynetstring.Decoder()
     reader, writer = await asyncio.open_connection(host, port)
+    stream_reader = netstring.StreamReader()
     async def answer():
+        string_reader = stream_reader.next_string()
+        res = b''
         while True:
-            data = await reader.read(4096)
-            assert data
-            res = decoder.feed(data)
-            if res:
-                return res[0]
+            try:
+                part = string_reader.read()
+            except netstring.WantRead:
+                data = await reader.read(4096)
+                assert data
+                stream_reader.feed(data)
+            else:
+                if not part:
+                    break
+                res += part
+        return res
     try:
-        writer.write(pynetstring.encode(b'test good.loc'))
+        writer.write(netstring.encode(b'test good.loc'))
         answer_a = await answer()
         await asyncio.sleep(2)
-        writer.write(pynetstring.encode(b'test good.loc'))
+        writer.write(netstring.encode(b'test good.loc'))
         answer_b = await answer()
         assert answer_a == answer_b
     finally:
@@ -87,20 +95,28 @@ async def test_grace_expired(responder):
 @pytest.mark.timeout(7)
 async def test_fast_expire(responder):
     resp, host, port = responder
-    decoder = pynetstring.Decoder()
     reader, writer = await asyncio.open_connection(host, port)
+    stream_reader = netstring.StreamReader()
     async def answer():
+        string_reader = stream_reader.next_string()
+        res = b''
         while True:
-            data = await reader.read(4096)
-            assert data
-            res = decoder.feed(data)
-            if res:
-                return res[0]
+            try:
+                part = string_reader.read()
+            except netstring.WantRead:
+                data = await reader.read(4096)
+                assert data
+                stream_reader.feed(data)
+            else:
+                if not part:
+                    break
+                res += part
+        return res
     try:
-        writer.write(pynetstring.encode(b'test fast-expire.loc'))
+        writer.write(netstring.encode(b'test fast-expire.loc'))
         answer_a = await answer()
         await asyncio.sleep(2)
-        writer.write(pynetstring.encode(b'test fast-expire.loc'))
+        writer.write(netstring.encode(b'test fast-expire.loc'))
         answer_b = await answer()
         assert answer_a == answer_b == b'OK secure match=mail.loc'
     finally:
