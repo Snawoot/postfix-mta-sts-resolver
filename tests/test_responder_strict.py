@@ -3,9 +3,9 @@ import asyncio
 import itertools
 import socket
 
-import pynetstring
 import pytest
 
+from postfix_mta_sts_resolver import netstring
 from postfix_mta_sts_resolver.responder import STSSocketmapResponder
 import postfix_mta_sts_resolver.utils as utils
 from async_generator import yield_, async_generator
@@ -33,16 +33,23 @@ reqresps = list(load_testdata('refdata_strict'))
 async def test_responder(responder, params):
     (request, response), bufsize = params
     resp, host, port = responder
-    decoder = pynetstring.Decoder()
     reader, writer = await asyncio.open_connection(host, port)
+    stream_reader = netstring.StreamReader()
+    string_reader = stream_reader.next_string()
     try:
-        writer.write(pynetstring.encode(request))
+        writer.write(netstring.encode(request))
+        res = b''
         while True:
-            data = await reader.read(bufsize)
-            assert data
-            res = decoder.feed(data)
-            if res:
-                assert res[0] == response
-                break
+            try:
+                part = string_reader.read()
+            except netstring.WantRead:
+                data = await reader.read(bufsize)
+                assert data
+                stream_reader.feed(data)
+            else:
+                if not part:
+                    break
+                res += part
+        assert res == response
     finally:
         writer.close()

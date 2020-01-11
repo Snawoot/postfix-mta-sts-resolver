@@ -20,7 +20,6 @@ setup(name='postfix_mta_sts_resolver',
           'wheel',
       ],
       install_requires=[
-          'pynetstring>=0.1.dev2',
           'aiodns>=1.1.1',
           'aiohttp>=3.4.4',
           'PyYAML>=3.12',

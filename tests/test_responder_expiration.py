@@ -4,8 +4,8 @@ import os
 import contextlib
 
 import pytest
-import pynetstring
 
+from postfix_mta_sts_resolver import netstring
 from postfix_mta_sts_resolver.responder import STSSocketmapResponder
 import postfix_mta_sts_resolver.utils as utils
 import postfix_mta_sts_resolver.base_cache as base_cache
@@ -25,15 +25,23 @@ def set_env(**environ):
 async def test_responder_expiration(event_loop):
     async def query(host, port, domain):
         reader, writer = await asyncio.open_connection(host, port)
-        decoder = pynetstring.Decoder()
-        writer.write(pynetstring.encode(b'test ' + domain.encode('ascii')))
+        stream_reader = netstring.StreamReader()
+        string_reader = stream_reader.next_string()
+        writer.write(netstring.encode(b'test ' + domain.encode('ascii')))
         try:
+            res = b''
             while True:
-                data = await reader.read(4096)
-                assert data
-                res = decoder.feed(data)
-                if res:
-                    return res[0]
+                try:
+                    part = string_reader.read()
+                except netstring.WantRead:
+                    data = await reader.read(4096)
+                    assert data
+                    stream_reader.feed(data)
+                else:
+                    if not part:
+                        break
+                    res += part
+            return res
         finally:
             writer.close()
     with tempfile.NamedTemporaryFile() as cachedb:
