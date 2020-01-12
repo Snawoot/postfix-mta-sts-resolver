@@ -49,7 +49,7 @@ class SingleNetstringFetcher:
     def done(self):
         return self._done
 
-    def read(self):
+    def read(self, nbytes=65536):
         # pylint: disable=too-many-branches
         if not self._len_known:
             # reading length
@@ -70,7 +70,7 @@ class SingleNetstringFetcher:
                     raise TooLong("Netstring length is over limit.")
         # reading data
         if self._len:
-            buf = self._incoming.read(self._len)
+            buf = self._incoming.read(min(nbytes, self._len))
             if not buf:
                 raise WantRead()
             self._len -= len(buf)
