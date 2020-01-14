@@ -1,5 +1,8 @@
 import os
 import socket
+import asyncio
+
+MAX_QLEN = 128
 
 class AsyncSystemdNotifier:
     """ Boilerplate for proper implementation. This one, however,
@@ -12,27 +15,50 @@ class AsyncSystemdNotifier:
                       else env_var)
         self._sock = None
         self._started = False
+        self._loop = None
+        self._queue = asyncio.Queue(MAX_QLEN)
+
+    @property
+    def started(self):
+        return self._started
+
+    def _drain(self):
+        try:
+            while not self._queue.empty():
+                msg = self._queue.get_nowait()
+                self._queue.task_done()
+                self._send(msg)
+        except BlockingIOError:  # pragma: no cover
+            pass
+        except OSError:
+            pass
+
+    def _send(self, data):
+        return self._sock.sendto(data, socket.MSG_NOSIGNAL, self._addr)
 
     async def start(self):
         if self._addr is None:
             return False
+        self._loop = asyncio.get_event_loop()
         try:
             self._sock = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
             self._sock.setblocking(0)
+            self._loop.add_writer(self._sock.fileno(), self._drain)
             self._started = True
-        except socket.error:
+        except OSError:
             return False
         return True
 
     async def notify(self, status):
         if self._started:
-            try:
-                self._sock.sendto(status, socket.MSG_NOSIGNAL, self._addr)
-            except socket.error:
-                pass
+            await self._queue.put(status)
+            self._drain()
 
     async def stop(self):
         if self._started:
+            self._started = False
+            await self._queue.join()
+            self._loop.remove_writer(self._sock.fileno())
             self._sock.close()
 
     async def __aenter__(self):
