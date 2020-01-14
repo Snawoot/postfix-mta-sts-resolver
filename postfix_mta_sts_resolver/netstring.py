@@ -49,6 +49,9 @@ class SingleNetstringFetcher:
     def done(self):
         return self._done
 
+    def pending(self):
+        return self._len is not None
+
     def read(self, nbytes=65536):
         # pylint: disable=too-many-branches
         if not self._len_known:
@@ -109,6 +112,9 @@ class StreamReader:
         self._incoming = ssl.MemoryBIO()
         self._fetcher = None
 
+    def pending(self):
+        return self._fetcher is not None and self._fetcher.pending()
+
     def feed(self, data):
         self._incoming.write(data)
 
@@ -138,4 +144,5 @@ def decode(data):
                 res.append(buf)
             yield b''.join(res)
     except WantRead:
-        pass
+        if reader.pending():
+            raise IncompleteNetstring("Input ends on unfinished string.")

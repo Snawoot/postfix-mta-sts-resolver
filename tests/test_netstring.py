@@ -18,6 +18,7 @@ def test_leading_zeroes(reference, sample):
     assert reference == list(netstring.decode(sample))
 
 @pytest.mark.parametrize("reference,sample", [
+    pytest.param([], b'', id="nodata"),
     pytest.param([b''], b'0:,', id="empty"),
     pytest.param([b'5:Hello,6:World!,'], b'17:5:Hello,6:World!,,', id="nested"),
 ])
@@ -28,6 +29,18 @@ def test_decode(reference, sample):
 def test_bad_length(encoded):
     with pytest.raises(netstring.BadLength):
         list(netstring.decode(encoded))
+
+@pytest.mark.parametrize("encoded", [b'3', b'3:', b'3:a', b'3:aa', b'3:aaa'])
+def test_decode_incomplete_string(encoded):
+    with pytest.raises(netstring.IncompleteNetstring):
+        list(netstring.decode(encoded))
+
+def test_abandoned_string_reader_handles():
+    stream_reader = netstring.StreamReader()
+    stream_reader.feed(b'0:,')
+    string_reader = stream_reader.next_string()
+    with pytest.raises(netstring.InappropriateParserState):
+        string_reader = stream_reader.next_string()
 
 @pytest.mark.parametrize("encoded", [b'0:_', b'3:aaa_'])
 def test_bad_terminator(encoded):
