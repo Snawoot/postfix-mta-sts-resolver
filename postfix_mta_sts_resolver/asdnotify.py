@@ -5,9 +5,6 @@ import asyncio
 MAX_QLEN = 128
 
 class AsyncSystemdNotifier:
-    """ Boilerplate for proper implementation. This one, however,
-    also will work. """
-
     def __init__(self):
         env_var = os.getenv('NOTIFY_SOCKET')
         self._addr = ('\0' + env_var[1:]
@@ -24,18 +21,21 @@ class AsyncSystemdNotifier:
         return self._started
 
     def _drain(self):
-        try:
-            while not self._queue.empty():
-                msg = self._queue.get_nowait()
-                self._queue.task_done()
+        while not self._queue.empty():
+            msg = self._queue.get_nowait()
+            self._queue.task_done()
+            try:
                 self._send(msg)
+            except BlockingIOError:  # pragma: no cover
+                self._monitor = True
+                self._loop.add_writer(self._sock.fileno(), self._drain)
+                break
+            except OSError:
+                pass
+        else:
             if self._monitor:
+                self._monitor = False
                 self._loop.remove_writer(self._sock.fileno())
-        except BlockingIOError:  # pragma: no cover
-            self._monitor = True
-            self._loop.add_writer(self._sock.fileno(), self._drain)
-        except OSError:
-            pass
 
     def _send(self, data):
         return self._sock.sendto(data, socket.MSG_NOSIGNAL, self._addr)
@@ -61,7 +61,8 @@ class AsyncSystemdNotifier:
         if self._started:
             self._started = False
             await self._queue.join()
-            self._loop.remove_writer(self._sock.fileno())
+            if self._monitor:
+                self._loop.remove_writer(self._sock.fileno())
             self._sock.close()
 
     async def __aenter__(self):
