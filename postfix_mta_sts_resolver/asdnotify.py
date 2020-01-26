@@ -17,6 +17,7 @@ class AsyncSystemdNotifier:
         self._started = False
         self._loop = None
         self._queue = asyncio.Queue(MAX_QLEN)
+        self._monitor = False
 
     @property
     def started(self):
@@ -28,8 +29,11 @@ class AsyncSystemdNotifier:
                 msg = self._queue.get_nowait()
                 self._queue.task_done()
                 self._send(msg)
+            if self._monitor:
+                self._loop.remove_writer(self._sock.fileno())
         except BlockingIOError:  # pragma: no cover
-            pass
+            self._monitor = True
+            self._loop.add_writer(self._sock.fileno(), self._drain)
         except OSError:
             pass
 
@@ -43,7 +47,6 @@ class AsyncSystemdNotifier:
         try:
             self._sock = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
             self._sock.setblocking(0)
-            self._loop.add_writer(self._sock.fileno(), self._drain)
             self._started = True
         except OSError:
             return False
