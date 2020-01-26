@@ -227,7 +227,7 @@ class STSSocketmapResponder:
         stream_reader = netstring.StreamReader(REQUEST_LIMIT)
 
         # Construct queue for responses ordering
-        queue = asyncio.Queue(QUEUE_LIMIT, loop=self._loop)
+        queue = asyncio.Queue(QUEUE_LIMIT)
 
         # Create coroutine which awaits for steady responses and sends them
         sender = asyncio.ensure_future(self.sender(queue, writer), loop=self._loop)
