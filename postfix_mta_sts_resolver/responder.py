@@ -9,7 +9,7 @@ from functools import partial
 
 from .resolver import STSResolver, STSFetchResult
 from .constants import QUEUE_LIMIT, CHUNK, REQUEST_LIMIT
-from .utils import create_custom_socket, create_cache, filter_domain, is_ipaddr
+from .utils import create_custom_socket, filter_domain, is_ipaddr
 from .base_cache import CacheEntry
 from . import netstring
 
@@ -19,7 +19,7 @@ ZoneEntry = collections.namedtuple('ZoneEntry', ('strict', 'resolver'))
 
 # pylint: disable=too-many-instance-attributes
 class STSSocketmapResponder:
-    def __init__(self, cfg, loop):
+    def __init__(self, cfg, loop, cache):
         self._logger = logging.getLogger("STS")
         self._loop = loop
         if cfg.get('path') is not None:
@@ -33,6 +33,7 @@ class STSSocketmapResponder:
         self._reuse_port = cfg['reuse_port']
         self._shutdown_timeout = cfg['shutdown_timeout']
         self._grace = cfg['cache_grace']
+        self._proactive_fetch_enabled = cfg['cache']['proactive_fetch_enabled']
 
         # Construct configurations and resolvers for every socketmap name
         self._default_zone = ZoneEntry(cfg["default_zone"]["strict_testing"],
@@ -44,9 +45,7 @@ class STSSocketmapResponder:
                                                      timeout=zone["timeout"])))
                            for k, zone in cfg["zones"].items())
 
-        # Construct cache
-        self._cache = create_cache(cfg["cache"]["type"],
-                                   cfg["cache"]["options"])
+        self._cache = cache
         self._children = set()
         self._server = None
 
@@ -58,8 +57,6 @@ class STSSocketmapResponder:
             task.add_done_callback(partial(done_cb, task))
             self._children.add(task)
             self._logger.debug("len(self._children) = %d", len(self._children))
-
-        await self._cache.setup()
 
         if self._unix:
             self._server = await asyncio.start_unix_server(_spawn, path=self._path)
@@ -113,7 +110,6 @@ class STSSocketmapResponder:
             await asyncio.sleep(1)
             if not self._children:
                 break
-        await self._cache.teardown()
 
     async def sender(self, queue, writer):
         def cleanup_queue():
@@ -146,15 +142,6 @@ class STSSocketmapResponder:
 
     # pylint: disable=too-many-locals,too-many-branches,too-many-statements
     async def process_request(self, raw_req):
-        # Update local cache
-        async def cache_set(domain, entry):
-            try:
-                await self._cache.set(domain, entry)
-            except asyncio.CancelledError:  # pragma: no cover pylint: disable=try-except-raise
-                raise
-            except Exception as exc: # pragma: no cover
-                self._logger.exception("Cache set failed: %s", str(exc))
-
         have_policy = True
 
         # Parse request and canonicalize domain
@@ -182,9 +169,9 @@ class STSSocketmapResponder:
             cached = None
 
         ts = time.time()  # pylint: disable=invalid-name
-        # Check if cached record exists and recent enough to omit
+        # Check if cached record exists and is not stale
         # DNS lookup and cache update
-        if cached is None or ts - cached.ts > self._grace:
+        if cached is None or (ts - cached.ts > self._grace and not self._proactive_fetch_enabled):
             self._logger.debug("Lookup PERFORMED: domain = %s", domain)
             # Check if newer policy exists or
             # retrieve policy from scratch if there is no cached one
@@ -193,11 +180,11 @@ class STSSocketmapResponder:
 
             if status is STSFetchResult.NOT_CHANGED:
                 cached = CacheEntry(ts, cached.pol_id, cached.pol_body)
-                await cache_set(domain, cached)
+                await self._cache.safe_set(domain, cached, self._logger)
             elif status is STSFetchResult.VALID:
                 pol_id, pol_body = policy
                 cached = CacheEntry(ts, pol_id, pol_body)
-                await cache_set(domain, cached)
+                await self._cache.safe_set(domain, cached, self._logger)
             else:
                 if cached is None:
                     have_policy = False
@@ -207,7 +194,6 @@ class STSSocketmapResponder:
                         have_policy = False
         else:
             self._logger.debug("Lookup skipped: domain = %s", domain)
-
 
         if have_policy:
             mode = cached.pol_body['mode']

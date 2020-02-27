@@ -19,11 +19,15 @@ async def responder(event_loop):
     import postfix_mta_sts_resolver.utils as utils
     cfg = utils.populate_cfg_defaults(None)
     cfg["zones"]["test2"] = cfg["default_zone"]
-    resp = STSSocketmapResponder(cfg, event_loop)
+    cache = utils.create_cache(cfg['cache']['type'],
+                               cfg['cache']['options'])
+    await cache.setup()
+    resp = STSSocketmapResponder(cfg, event_loop, cache)
     await resp.start()
     result = resp, cfg['host'], cfg['port']
     await yield_(result)
     await resp.stop()
+    await cache.teardown()
 
 @pytest.fixture(scope="module")
 @async_generator
@@ -31,11 +35,15 @@ async def unix_responder(event_loop):
     import postfix_mta_sts_resolver.utils as utils
     cfg = utils.populate_cfg_defaults({'path': '/tmp/mta-sts.sock', 'mode': 0o666})
     cfg["zones"]["test2"] = cfg["default_zone"]
-    resp = STSSocketmapResponder(cfg, event_loop)
+    cache = utils.create_cache(cfg['cache']['type'],
+                               cfg['cache']['options'])
+    await cache.setup()
+    resp = STSSocketmapResponder(cfg, event_loop, cache)
     await resp.start()
     result = resp, cfg['path']
     await yield_(result)
     await resp.stop()
+    await cache.teardown()
 
 buf_sizes = [4096, 128, 16, 1]
 reqresps = list(load_testdata('refdata'))

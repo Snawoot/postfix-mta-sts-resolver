@@ -108,6 +108,12 @@ class SqliteCache(BaseCache):
                     await cur.execute(q)
             await conn.commit()
 
+    async def get_proactive_fetch_ts(self):
+        raise NotImplementedError
+
+    async def set_proactive_fetch_ts(self, timestamp):
+        raise NotImplementedError
+
     async def get(self, key):
         async with self._pool.borrow(self._timeout) as conn:
             async with conn.execute('select ts, pol_id, pol_body from '
@@ -137,6 +143,9 @@ class SqliteCache(BaseCache):
                                    'and ts < ?',
                                    (int(ts), pol_id, pol_body, key, int(ts)))
                 await conn.commit()
+
+    async def scan(self, token, amount_hint):
+        raise NotImplementedError
 
     async def teardown(self):
         await self._pool.stop()

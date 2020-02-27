@@ -66,12 +66,12 @@ async def test_responder_expiration(event_loop):
             "max_age": 1,
         }
         await cache.set("no-record.loc", base_cache.CacheEntry(0, "0", pol_body))
-        await cache.teardown()
 
-        resp = STSSocketmapResponder(cfg, event_loop)
+        resp = STSSocketmapResponder(cfg, event_loop, cache)
         await resp.start()
         try:
             result = await query(cfg['host'], cfg['port'], 'no-record.loc')
             assert result == b'NOTFOUND '
         finally:
             await resp.stop()
+            await cache.teardown()

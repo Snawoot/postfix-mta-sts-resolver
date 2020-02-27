@@ -19,11 +19,15 @@ async def responder(event_loop):
     cfg = utils.populate_cfg_defaults({"default_zone": {"strict_testing": True}})
     cfg["zones"]["test2"] = cfg["default_zone"]
     cfg["port"] = 28461
-    resp = STSSocketmapResponder(cfg, event_loop)
+    cache = utils.create_cache(cfg['cache']['type'],
+                               cfg['cache']['options'])
+    await cache.setup()
+    resp = STSSocketmapResponder(cfg, event_loop, cache)
     await resp.start()
     result = resp, cfg['host'], cfg['port']
     await yield_(result)
     await resp.stop()
+    await cache.teardown()
 
 buf_sizes = [4096, 128, 16, 1]
 reqresps = list(load_testdata('refdata_strict'))

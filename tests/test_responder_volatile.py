@@ -19,11 +19,15 @@ async def responder(event_loop):
     cfg["shutdown_timeout"] = 1
     cfg["cache_grace"] = 0
     cfg["zones"]["test2"] = cfg["default_zone"]
-    resp = STSSocketmapResponder(cfg, event_loop)
+    cache = utils.create_cache(cfg['cache']['type'],
+                               cfg['cache']['options'])
+    await cache.setup()
+    resp = STSSocketmapResponder(cfg, event_loop, cache)
     await resp.start()
     result = resp, cfg['host'], cfg['port']
     await yield_(result)
     await resp.stop()
+    await cache.teardown()
 
 @pytest.mark.asyncio
 @pytest.mark.timeout(5)

@@ -89,6 +89,13 @@ def populate_cfg_defaults(cfg):
     if 'cache' not in cfg:
         cfg['cache'] = {}
 
+    cfg['cache']['proactive_fetch_enabled'] = \
+        cfg['cache'].get('proactive_fetch_enabled',
+                         defaults.PROACTIVE_FETCH_ENABLED)
+    cfg['cache']['proactive_fetch_interval'] = \
+        cfg['cache'].get('proactive_fetch_interval',
+                         defaults.PROACTIVE_FETCH_INTERVAL)
+
     cfg['cache']['type'] = cfg['cache'].get('type', defaults.CACHE_BACKEND)
 
     if cfg['cache']['type'] == 'internal':

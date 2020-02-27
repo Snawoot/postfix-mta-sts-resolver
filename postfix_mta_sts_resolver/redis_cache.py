@@ -55,6 +55,15 @@ class RedisCache(BaseCache):
         pipe.zremrangebyrank(key, 0, -2)
         await pipe.execute()
 
+    async def scan(self, token, amount_hint):
+        raise NotImplementedError
+
+    async def get_proactive_fetch_ts(self):
+        raise NotImplementedError
+
+    async def set_proactive_fetch_ts(self, timestamp):
+        raise NotImplementedError
+
     async def teardown(self):
         assert self._pool is not None
         self._pool.close()
