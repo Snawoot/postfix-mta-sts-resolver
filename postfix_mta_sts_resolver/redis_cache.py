@@ -56,13 +56,30 @@ class RedisCache(BaseCache):
         await pipe.execute()
 
     async def scan(self, token, amount_hint):
-        raise NotImplementedError
+        assert self._pool is not None
+        if token is None:
+            token = b'0'
+
+        new_token, keys = await self._pool.scan(cursor=token, count=amount_hint)
+        if not new_token:
+            new_token = None
+
+        result = []
+        for key in keys:
+            key = key.decode('utf-8')
+            if key != '_metadata':
+                result.append((key, await self.get(key)))
+        return new_token, result
 
     async def get_proactive_fetch_ts(self):
-        raise NotImplementedError
+        assert self._pool is not None
+        val = await self._pool.hget('_metadata', 'proactive_fetch_ts')
+        return 0 if not val else float(val.decode('utf-8'))
 
     async def set_proactive_fetch_ts(self, timestamp):
-        raise NotImplementedError
+        assert self._pool is not None
+        val = str(timestamp).encode('utf-8')
+        await self._pool.hset('_metadata', 'proactive_fetch_ts', val)
 
     async def teardown(self):
         assert self._pool is not None
