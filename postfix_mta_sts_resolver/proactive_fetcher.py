@@ -28,10 +28,8 @@ class STSProactiveFetcher:
                     pol_id, pol_body = policy
                     cached = CacheEntry(time.time(), pol_id, pol_body)
                     await self._cache.safe_set(domain, cached, self._logger)
-                elif status is STSFetchResult.NOT_CHANGED:
-                    pass
-                else:
-                    self._logger.warning("Domain %s has an invalid policy.", domain)
+                elif status is STSFetchResult.FETCH_ERROR or status is STSFetchResult.NONE:
+                    self._logger.warning("Domain %s does not have a valid policy.", domain)
             except asyncio.CancelledError:  # pragma: no cover pylint: disable=try-except-raise
                 raise
             except Exception as exc:  # pragma: no cover

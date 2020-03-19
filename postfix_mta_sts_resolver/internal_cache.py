@@ -42,7 +42,10 @@ class InternalLRUCache(BaseCache):
             amount = min(left, amount_hint)
             new_token = token + amount if token + amount < total else None
             # Take "amount" of oldest
-            return new_token, list(islice(self._cache.items(), amount))
+            result = list(islice(self._cache.items(), amount))
+            for key, _ in result:  # for LRU consistency
+                await self.get(key)
+            return new_token, result
         return None, []
 
     async def get_proactive_fetch_ts(self):
