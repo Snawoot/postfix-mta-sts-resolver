@@ -12,12 +12,14 @@ from async_generator import yield_, async_generator
 
 @pytest.fixture
 @async_generator
-async def responder(event_loop):
+async def responder(request, event_loop):
     import postfix_mta_sts_resolver.utils as utils
     cfg = utils.populate_cfg_defaults(None)
     cfg["port"] = 38461
     cfg["shutdown_timeout"] = 1
     cfg["cache_grace"] = 0
+    # Simulate proactive fetching to be enabled, but refreshing only once per day (or failed)
+    cfg["proactive_fetch_enabled"] = request.param
     cfg["zones"]["test2"] = cfg["default_zone"]
     cache = utils.create_cache(cfg['cache']['type'],
                                cfg['cache']['options'])
@@ -29,6 +31,7 @@ async def responder(event_loop):
     await resp.stop()
     await cache.teardown()
 
+@pytest.mark.parametrize("responder", [True, False], indirect=True)
 @pytest.mark.asyncio
 @pytest.mark.timeout(5)
 async def test_hanging_stop(responder):
@@ -38,6 +41,7 @@ async def test_hanging_stop(responder):
     assert await reader.read() == b''
     writer.close()
 
+@pytest.mark.parametrize("responder", [True, False], indirect=True)
 @pytest.mark.asyncio
 @pytest.mark.timeout(5)
 async def test_inprogress_stop(responder):
@@ -50,6 +54,7 @@ async def test_inprogress_stop(responder):
     assert await reader.read() == b''
     writer.close()
 
+@pytest.mark.parametrize("responder", [True, False], indirect=True)
 @pytest.mark.asyncio
 @pytest.mark.timeout(5)
 async def test_extended_stop(responder):
@@ -64,6 +69,7 @@ async def test_extended_stop(responder):
     assert await reader.read() == b''
     writer.close()
 
+@pytest.mark.parametrize("responder", [True, False], indirect=True)
 @pytest.mark.asyncio
 @pytest.mark.timeout(7)
 async def test_grace_expired(responder):
@@ -95,6 +101,7 @@ async def test_grace_expired(responder):
     finally:
         writer.close()
 
+@pytest.mark.parametrize("responder", [True, False], indirect=True)
 @pytest.mark.asyncio
 @pytest.mark.timeout(7)
 async def test_fast_expire(responder):

@@ -49,6 +49,20 @@ class STSSocketmapResponder:
         self._children = set()
         self._server = None
 
+    # Check if cached record is nonexistent or stale
+    def is_stale(self, cached):
+        if cached is None:
+            return True
+
+        ts = time.time()  # pylint: disable=invalid-name
+        if ts - cached.ts > self._grace:
+            if not self._proactive_fetch_enabled:
+                return True
+            if cached.pol_body['max_age'] + cached.ts < ts:
+                return True
+
+        return False
+
     async def start(self):
         def _spawn(reader, writer):
             def done_cb(task, fut):
@@ -168,10 +182,9 @@ class STSSocketmapResponder:
             self._logger.exception("Cache get failed: %s", str(exc))
             cached = None
 
-        ts = time.time()  # pylint: disable=invalid-name
-        # Check if cached record exists and is not stale
         # DNS lookup and cache update
-        if cached is None or (ts - cached.ts > self._grace and not self._proactive_fetch_enabled):
+        if self.is_stale(cached):
+            ts = time.time()  # pylint: disable=invalid-name
             self._logger.debug("Lookup PERFORMED: domain = %s", domain)
             # Check if newer policy exists or
             # retrieve policy from scratch if there is no cached one

@@ -15,12 +15,14 @@ from testdata import load_testdata
 
 @pytest.fixture(scope="module")
 @async_generator
-async def responder(event_loop):
+async def responder(request, event_loop):
     import postfix_mta_sts_resolver.utils as utils
     cfg = utils.populate_cfg_defaults(None)
     cfg["zones"]["test2"] = cfg["default_zone"]
     cache = utils.create_cache(cfg['cache']['type'],
                                cfg['cache']['options'])
+    # Simulate proactive fetching to be enabled, but refreshing only once per day (or failed)
+    cfg["proactive_fetch_enabled"] = request.param
     await cache.setup()
     resp = STSSocketmapResponder(cfg, event_loop, cache)
     await resp.start()
@@ -31,12 +33,14 @@ async def responder(event_loop):
 
 @pytest.fixture(scope="module")
 @async_generator
-async def unix_responder(event_loop):
+async def unix_responder(request, event_loop):
     import postfix_mta_sts_resolver.utils as utils
     cfg = utils.populate_cfg_defaults({'path': '/tmp/mta-sts.sock', 'mode': 0o666})
     cfg["zones"]["test2"] = cfg["default_zone"]
     cache = utils.create_cache(cfg['cache']['type'],
                                cfg['cache']['options'])
+    # Simulate proactive fetching to be enabled, but refreshing only once per day
+    cfg["proactive_fetch_enabled"] = request.param
     await cache.setup()
     resp = STSSocketmapResponder(cfg, event_loop, cache)
     await resp.start()
@@ -45,14 +49,15 @@ async def unix_responder(event_loop):
     await resp.stop()
     await cache.teardown()
 
+proactive_fetch_enabled_modes = [True, False]
 buf_sizes = [4096, 128, 16, 1]
 reqresps = list(load_testdata('refdata'))
-bufreq_pairs = tuple(itertools.product(reqresps, buf_sizes))
-@pytest.mark.parametrize("params", bufreq_pairs)
+@pytest.mark.parametrize("responder,req_res,bufsize",
+                         tuple(itertools.product([True], reqresps, buf_sizes)), indirect=['responder'])
 @pytest.mark.asyncio
 @pytest.mark.timeout(5)
-async def test_responder(responder, params):
-    (request, response), bufsize = params
+async def test_responder(responder, req_res, bufsize):
+    (request, response) = req_res
     resp, host, port = responder
     stream_reader = netstring.StreamReader()
     string_reader = stream_reader.next_string()
@@ -75,11 +80,12 @@ async def test_responder(responder, params):
     finally:
         writer.close()
 
-@pytest.mark.parametrize("params", tuple(itertools.product(reqresps, buf_sizes)))
+@pytest.mark.parametrize("unix_responder,req_res,bufsize",
+                         tuple(itertools.product([False], reqresps, buf_sizes)), indirect=['unix_responder'])
 @pytest.mark.asyncio
 @pytest.mark.timeout(5)
-async def test_unix_responder(unix_responder, params):
-    (request, response), bufsize = params
+async def test_unix_responder(unix_responder, req_res, bufsize):
+    (request, response) = req_res
     resp, path = unix_responder
     stream_reader = netstring.StreamReader()
     string_reader = stream_reader.next_string()
@@ -103,6 +109,7 @@ async def test_unix_responder(unix_responder, params):
     finally:
         writer.close()
 
+@pytest.mark.parametrize("responder", [True, False], indirect=True)
 @pytest.mark.asyncio
 @pytest.mark.timeout(5)
 async def test_empty_dialog(responder):
@@ -110,6 +117,7 @@ async def test_empty_dialog(responder):
     reader, writer = await asyncio.open_connection(host, port)
     writer.close()
 
+@pytest.mark.parametrize("responder", [True, False], indirect=True)
 @pytest.mark.asyncio
 @pytest.mark.timeout(5)
 async def test_corrupt_dialog(responder):
@@ -120,6 +128,7 @@ async def test_corrupt_dialog(responder):
     assert await reader.read() == b''
     writer.close()
 
+@pytest.mark.parametrize("responder", [True, False], indirect=True)
 @pytest.mark.asyncio
 @pytest.mark.timeout(5)
 async def test_early_disconnect(responder):
@@ -128,6 +137,7 @@ async def test_early_disconnect(responder):
     writer.write(netstring.encode(b'test good.loc'))
     writer.close()
 
+@pytest.mark.parametrize("responder", [True, False], indirect=True)
 @pytest.mark.asyncio
 @pytest.mark.timeout(5)
 async def test_cached(responder):
@@ -157,6 +167,7 @@ async def test_cached(responder):
     finally:
         writer.close()
 
+@pytest.mark.parametrize("responder", [True, False], indirect=True)
 @pytest.mark.asyncio
 @pytest.mark.timeout(7)
 async def test_fast_expire(responder):
@@ -188,11 +199,12 @@ async def test_fast_expire(responder):
     finally:
         writer.close()
 
-@pytest.mark.parametrize("params", tuple(itertools.product(reqresps, buf_sizes)))
+@pytest.mark.parametrize("responder,req_res,bufsize",
+                         tuple(itertools.product([False], reqresps, buf_sizes)), indirect=['responder'])
 @pytest.mark.asyncio
 @pytest.mark.timeout(5)
-async def test_responder_with_custom_socket(event_loop, responder, params):
-    (request, response), bufsize = params
+async def test_responder_with_custom_socket(event_loop, responder, req_res, bufsize):
+    (request, response) = req_res
     resp, host, port = responder
     sock = await utils.create_custom_socket(host, 0, flags=0,
                                             options=[(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)])

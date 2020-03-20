@@ -20,9 +20,10 @@ def set_env(**environ):
         os.environ.clear()
         os.environ.update(old_environ)
 
+@pytest.mark.parametrize("proactive_fetch_enabled", [True, False])
 @pytest.mark.asyncio
 @pytest.mark.timeout(10)
-async def test_responder_expiration(event_loop):
+async def test_responder_expiration(event_loop, proactive_fetch_enabled):
     async def query(host, port, domain):
         reader, writer = await asyncio.open_connection(host, port)
         stream_reader = netstring.StreamReader()
@@ -49,6 +50,8 @@ async def test_responder_expiration(event_loop):
         cfg["port"] = 18461
         cfg["cache_grace"] = 0
         cfg["shutdown_timeout"] = 1
+        # Simulate proactive fetching to be enabled, but refreshing only once per day (or failed)
+        cfg["proactive_fetch_enabled"] = proactive_fetch_enabled
         cfg["cache"] = {
             "type": "sqlite",
             "options": {
