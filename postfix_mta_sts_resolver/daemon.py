@@ -64,7 +64,7 @@ async def heartbeat():
 async def amain(cfg, loop):  # pragma: no cover
     logger = logging.getLogger("MAIN")
 
-    proactive_fetch_enabled = cfg['cache']['proactive_fetch_enabled']
+    proactive_fetch_enabled = cfg['proactive_fetch_enabled']
 
     # Create policy cache
     cache = create_cache(cfg["cache"]["type"],

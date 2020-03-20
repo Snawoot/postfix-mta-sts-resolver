@@ -10,7 +10,7 @@ from postfix_mta_sts_resolver.resolver import STSResolver, STSFetchResult
 class STSProactiveFetcher:
     def __init__(self, cfg, loop, cache):
         self._shutdown_timeout = cfg['shutdown_timeout']
-        self._proactive_fetch_interval = cfg['cache']['proactive_fetch_interval']
+        self._proactive_fetch_interval = cfg['proactive_fetch_interval']
         self._logger = logging.getLogger("PF")
         self._loop = loop
         self._cache = cache

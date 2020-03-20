@@ -28,6 +28,10 @@ The file is in YAML syntax with the following elements:
 
 *cache_grace*: (_float_) age of cache entries in seconds which do not require policy refresh and update. Default: 60
 
+*proactive_fetch_enabled*: (_bool_) enable proactive policy fetching in the background (having it enabled renders the cache_grace parameter irrelevant). Default: false
+
+*proactive_fetch_interval*: (_int_) if proactive policy fetching is enabled, it is scheduled every this many seconds. Default: 86400
+
 *shutdown_timeout*: (_float_) time limit granted to existing client sessions for finishing when server stops. Default: 20
 
 *cache*::
@@ -65,6 +69,8 @@ domains operate under "testing" mode.
  port: 8461
  reuse_port: true
  shutdown_timeout: 20
+ proactive_fetch_enabled: true
+ proactive_fetch_interval: 86400
  cache:
    type: internal
    options:

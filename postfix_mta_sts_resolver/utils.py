@@ -85,16 +85,13 @@ def populate_cfg_defaults(cfg):
     cfg['shutdown_timeout'] = cfg.get('shutdown_timeout',
                                       defaults.SHUTDOWN_TIMEOUT)
     cfg['cache_grace'] = cfg.get('cache_grace', defaults.CACHE_GRACE)
+    cfg['proactive_fetch_enabled'] = cfg.get('proactive_fetch_enabled',
+                                             defaults.PROACTIVE_FETCH_ENABLED)
+    cfg['proactive_fetch_interval'] = cfg.get('proactive_fetch_interval',
+                                              defaults.PROACTIVE_FETCH_INTERVAL)
 
     if 'cache' not in cfg:
         cfg['cache'] = {}
-
-    cfg['cache']['proactive_fetch_enabled'] = \
-        cfg['cache'].get('proactive_fetch_enabled',
-                         defaults.PROACTIVE_FETCH_ENABLED)
-    cfg['cache']['proactive_fetch_interval'] = \
-        cfg['cache'].get('proactive_fetch_interval',
-                         defaults.PROACTIVE_FETCH_INTERVAL)
 
     cfg['cache']['type'] = cfg['cache'].get('type', defaults.CACHE_BACKEND)
 

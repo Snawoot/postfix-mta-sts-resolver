@@ -5,7 +5,6 @@ postfix-mta-sts-resolver
 
 Daemon which provides TLS client policy for Postfix via socketmap, according to domain MTA-STS policy. Current support of RFC8461 is limited - daemon lacks some minor features:
 
-* Proactive policy fetch
 * Fetch error reporting
 * Fetch ratelimit (but actual fetch rate partially restricted with `cache_grace` config option).
 

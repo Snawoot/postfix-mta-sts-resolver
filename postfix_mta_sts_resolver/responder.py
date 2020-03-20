@@ -33,7 +33,7 @@ class STSSocketmapResponder:
         self._reuse_port = cfg['reuse_port']
         self._shutdown_timeout = cfg['shutdown_timeout']
         self._grace = cfg['cache_grace']
-        self._proactive_fetch_enabled = cfg['cache']['proactive_fetch_enabled']
+        self._proactive_fetch_enabled = cfg['proactive_fetch_enabled']
 
         # Construct configurations and resolvers for every socketmap name
         self._default_zone = ZoneEntry(cfg["default_zone"]["strict_testing"],
