@@ -28,10 +28,6 @@ The file is in YAML syntax with the following elements:
 
 *cache_grace*: (_float_) age of cache entries in seconds which do not require policy refresh and update. Default: 60
 
-*proactive_fetch_enabled*: (_bool_) enable proactive policy fetching in the background (having it enabled renders the cache_grace parameter irrelevant). Default: false
-
-*proactive_fetch_interval*: (_int_) if proactive policy fetching is enabled, it is scheduled every this many seconds. Default: 86400
-
 *shutdown_timeout*: (_float_) time limit granted to existing client sessions for finishing when server stops. Default: 20
 
 *cache*::
@@ -46,6 +42,14 @@ The file is in YAML syntax with the following elements:
   *** *timeout*: (_float_) timeout in seconds for acquiring connection from pool or DB lock
  ** Options for _redis_ type:
   *** All parameters are passed to `aioredis.create_redis_pool` [0]. Check there for a parameter reference.
+
+*proactive_policy_fetching*::
+
+* *enabled*: (_bool_) enable proactive policy fetching in the background. Default: false
+* *interval*: (_int_) if proactive policy fetching is enabled, it is scheduled every this many seconds.
+It is unaffected by `cache_grace` and vice versa. Default: 86400
+* *concurrency_limit*: (_int_) the maximum number of concurrent domain updates. Default: 100
+* *grace_ratio*: (_float_) proactive fetch for a particular domain is skipped if its cached policy age is less than `interval/grace_ratio`. Default: 2.0
 
 *default_zone*::
 
@@ -69,8 +73,11 @@ domains operate under "testing" mode.
  port: 8461
  reuse_port: true
  shutdown_timeout: 20
- proactive_fetch_enabled: true
- proactive_fetch_interval: 86400
+ proactive_policy_fetching:
+   enabled: true
+   interval: 86400
+   concurrency_limit: 100
+   grace_ratio: 2
  cache:
    type: internal
    options:

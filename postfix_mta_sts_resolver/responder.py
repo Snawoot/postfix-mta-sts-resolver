@@ -33,7 +33,6 @@ class STSSocketmapResponder:
         self._reuse_port = cfg['reuse_port']
         self._shutdown_timeout = cfg['shutdown_timeout']
         self._grace = cfg['cache_grace']
-        self._proactive_fetch_enabled = cfg['proactive_fetch_enabled']
 
         # Construct configurations and resolvers for every socketmap name
         self._default_zone = ZoneEntry(cfg["default_zone"]["strict_testing"],
@@ -51,15 +50,19 @@ class STSSocketmapResponder:
 
     # Check if cached record is nonexistent or stale
     def is_stale(self, cached):
+        ts = time.time()  # pylint: disable=invalid-name
+
+        # Nonexistent ?
         if cached is None:
             return True
 
-        ts = time.time()  # pylint: disable=invalid-name
+        # Expired grace period ?
         if ts - cached.ts > self._grace:
-            if not self._proactive_fetch_enabled:
-                return True
-            if cached.pol_body['max_age'] + cached.ts < ts:
-                return True
+            return True
+
+        # Expired policy ?
+        if cached.pol_body['max_age'] + cached.ts < ts:
+            return True
 
         return False
 

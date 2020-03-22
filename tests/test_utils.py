@@ -22,8 +22,10 @@ def test_populate_cfg_defaults(cfg):
     assert isinstance(res['port'], int)
     assert 0 < res['port'] < 65536
     assert isinstance(res['cache_grace'], (int, float))
-    assert isinstance(res['proactive_fetch_enabled'], bool)
-    assert isinstance(res['proactive_fetch_interval'], int)
+    assert isinstance(res['proactive_policy_fetching']['enabled'], bool)
+    assert isinstance(res['proactive_policy_fetching']['interval'], int)
+    assert isinstance(res['proactive_policy_fetching']['concurrency_limit'], int)
+    assert isinstance(res['proactive_policy_fetching']['grace_ratio'], (int, float))
     assert isinstance(res['cache'], collections.abc.Mapping)
     assert res['cache']['type'] in ('redis', 'sqlite', 'internal')
     assert isinstance(res['default_zone'], collections.abc.Mapping)
