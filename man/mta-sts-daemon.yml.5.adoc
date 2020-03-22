@@ -43,6 +43,14 @@ The file is in YAML syntax with the following elements:
  ** Options for _redis_ type:
   *** All parameters are passed to `aioredis.create_redis_pool` [0]. Check there for a parameter reference.
 
+*proactive_policy_fetching*::
+
+* *enabled*: (_bool_) enable proactive policy fetching in the background. Default: false
+* *interval*: (_int_) if proactive policy fetching is enabled, it is scheduled every this many seconds.
+It is unaffected by `cache_grace` and vice versa. Default: 86400
+* *concurrency_limit*: (_int_) the maximum number of concurrent domain updates. Default: 100
+* *grace_ratio*: (_float_) proactive fetch for a particular domain is skipped if its cached policy age is less than `interval/grace_ratio`. Default: 2.0
+
 *default_zone*::
 
 * *strict_testing*: (_bool_) enforce policy for testing domains
@@ -65,6 +73,11 @@ domains operate under "testing" mode.
  port: 8461
  reuse_port: true
  shutdown_timeout: 20
+ proactive_policy_fetching:
+   enabled: true
+   interval: 86400
+   concurrency_limit: 100
+   grace_ratio: 2
  cache:
    type: internal
    options:

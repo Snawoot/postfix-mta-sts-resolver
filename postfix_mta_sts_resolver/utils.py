@@ -86,6 +86,17 @@ def populate_cfg_defaults(cfg):
                                       defaults.SHUTDOWN_TIMEOUT)
     cfg['cache_grace'] = cfg.get('cache_grace', defaults.CACHE_GRACE)
 
+    if 'proactive_policy_fetching' not in cfg:
+        cfg['proactive_policy_fetching'] = {}
+    cfg['proactive_policy_fetching']['enabled'] = cfg['proactive_policy_fetching'].\
+        get('enabled', defaults.PROACTIVE_FETCH_ENABLED)
+    cfg['proactive_policy_fetching']['interval'] = cfg['proactive_policy_fetching'].\
+        get('interval', defaults.PROACTIVE_FETCH_INTERVAL)
+    cfg['proactive_policy_fetching']['concurrency_limit'] = cfg['proactive_policy_fetching'].\
+        get('concurrency_limit', defaults.PROACTIVE_FETCH_CONCURRENCY_LIMIT)
+    cfg['proactive_policy_fetching']['grace_ratio'] = cfg['proactive_policy_fetching'].\
+        get('grace_ratio', defaults.PROACTIVE_FETCH_GRACE_RATIO)
+
     if 'cache' not in cfg:
         cfg['cache'] = {}
 

@@ -10,7 +10,9 @@ from functools import partial
 from .asdnotify import AsyncSystemdNotifier
 from . import utils
 from . import defaults
+from .proactive_fetcher import STSProactiveFetcher
 from .responder import STSSocketmapResponder
+from .utils import create_cache
 
 
 def parse_args():
@@ -61,11 +63,27 @@ async def heartbeat():
 
 async def amain(cfg, loop):  # pragma: no cover
     logger = logging.getLogger("MAIN")
-    # Construct request handler instance
-    responder = STSSocketmapResponder(cfg, loop)
 
+    proactive_fetch_enabled = cfg['proactive_policy_fetching']['enabled']
+
+    # Create policy cache
+    cache = create_cache(cfg["cache"]["type"],
+                         cfg["cache"]["options"])
+    await cache.setup()
+
+    # Construct request handler
+    responder = STSSocketmapResponder(cfg, loop, cache)
     await responder.start()
     logger.info("Server started.")
+
+    # Conditionally construct proactive policy fetcher
+    proactive_fetcher = None
+    if proactive_fetch_enabled:
+        proactive_fetcher = STSProactiveFetcher(cfg, loop, cache)
+        await proactive_fetcher.start()
+        logger.info("Proactive policy fetcher started.")
+    else:
+        logger.info("Proactive policy fetching is disabled.")
 
     exit_event = asyncio.Event()
     beat = asyncio.ensure_future(heartbeat())
@@ -79,6 +97,9 @@ async def amain(cfg, loop):  # pragma: no cover
         await notifier.notify(b"STOPPING=1")
     beat.cancel()
     await responder.stop()
+    if proactive_fetch_enabled:
+        await proactive_fetcher.stop()
+    await cache.teardown()
 
 
 def main():  # pragma: no cover
@@ -87,6 +108,7 @@ def main():  # pragma: no cover
     with utils.AsyncLoggingHandler(args.logfile) as log_handler:
         logger = utils.setup_logger('MAIN', args.verbosity, log_handler)
         utils.setup_logger('STS', args.verbosity, log_handler)
+        utils.setup_logger('PF', args.verbosity, log_handler)
         logger.info("MTA-STS daemon starting...")
 
         # Read config and populate with defaults
