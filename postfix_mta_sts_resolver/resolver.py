@@ -68,7 +68,7 @@ class STSResolver:
             elif error.args[0] == aiodns.error.ARES_ENODATA:  # pylint: disable=no-else-return,no-member
                 return STSFetchResult.NONE, None
             else:  # pragma: no cover
-                return STSFetchResult.NONE, None
+                return STSFetchResult.FETCH_ERROR, None
         except asyncio.TimeoutError:
             return STSFetchResult.FETCH_ERROR, None
 
