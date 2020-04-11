@@ -12,21 +12,14 @@ from . import utils
 from . import defaults
 from .proactive_fetcher import STSProactiveFetcher
 from .responder import STSSocketmapResponder
-from .utils import create_cache
 
 
 def parse_args():
-    def check_loglevel(arg):
-        try:
-            return utils.LogLevel[arg]
-        except (IndexError, KeyError):
-            raise argparse.ArgumentTypeError("%s is not valid loglevel" % (repr(arg),))
-
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("-v", "--verbosity",
                         help="logging verbosity",
-                        type=check_loglevel,
+                        type=utils.check_loglevel,
                         choices=utils.LogLevel,
                         default=utils.LogLevel.info)
     parser.add_argument("-c", "--config",
@@ -67,8 +60,8 @@ async def amain(cfg, loop):  # pragma: no cover
     proactive_fetch_enabled = cfg['proactive_policy_fetching']['enabled']
 
     # Create policy cache
-    cache = create_cache(cfg["cache"]["type"],
-                         cfg["cache"]["options"])
+    cache = utils.create_cache(cfg["cache"]["type"],
+                               cfg["cache"]["options"])
     await cache.setup()
 
     # Construct request handler
@@ -109,6 +102,7 @@ def main():  # pragma: no cover
         logger = utils.setup_logger('MAIN', args.verbosity, log_handler)
         utils.setup_logger('STS', args.verbosity, log_handler)
         utils.setup_logger('PF', args.verbosity, log_handler)
+        utils.setup_logger('RES', args.verbosity, log_handler)
         logger.info("MTA-STS daemon starting...")
 
         # Read config and populate with defaults
