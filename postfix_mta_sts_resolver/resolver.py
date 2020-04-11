@@ -1,5 +1,6 @@
 import asyncio
 import enum
+import logging
 from io import BytesIO
 
 import aiodns
@@ -25,6 +26,8 @@ class STSFetchResult(enum.Enum):
 _HEADERS = {"User-Agent": defaults.USER_AGENT}
 
 # pylint: disable=too-few-public-methods
+# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-statements
 class STSResolver:
     def __init__(self, *, timeout=defaults.TIMEOUT, loop):
         self._loop = loop
@@ -32,6 +35,7 @@ class STSResolver:
         self._resolver = aiodns.DNSResolver(timeout=timeout, loop=loop)
         self._http_timeout = aiohttp.ClientTimeout(total=timeout)
         self._proxy_info = aiohttp.helpers.proxies_from_env().get('https', None)
+        self._logger = logging.getLogger("RES")
 
         if self._proxy_info is None:
             self._proxy = None
@@ -49,6 +53,8 @@ class STSResolver:
 
         # Construct name of corresponding MTA-STS DNS record for domain
         sts_txt_domain = '_mta-sts.' + domain
+        self._logger.debug("Got STS resolve request: sts_txt_domain=%s, "
+                           "known_id=%s", sts_txt_domain, last_known_id)
 
         # Try to fetch it
         try:
@@ -89,6 +95,9 @@ class STSResolver:
                 or 'id' not in mta_sts_record):
             return STSFetchResult.NONE, None
 
+        self._logger.debug("Parsed STS record for domain %s: %s",
+                           repr(domain), repr(mta_sts_record))
+
         # Obtain policy ID and return NOT_CHANGED if ID is equal to last known
         if mta_sts_record['id'] == last_known_id:
             return STSFetchResult.NOT_CHANGED, None
@@ -125,11 +134,15 @@ class STSResolver:
                     charset = (resp.charset if resp.charset is not None
                                else 'ascii')
                     policy_text = policy_file.getvalue().decode(charset)
-        except Exception:
+        except Exception as exc:
+            self._logger.warning("STS policy fetch for domain %s failed with "
+                                 "error: %s", repr(domain), str(exc))
             return STSFetchResult.FETCH_ERROR, None
 
         # Parse policy
         pol = parse_mta_sts_policy(policy_text)
+
+        self._logger.debug("Parsed policy for domain %s: %s", domain, repr(pol))
 
         # Validate policy
         if pol.get('version', None) != 'STSv1':

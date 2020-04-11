@@ -4,6 +4,7 @@ import logging.handlers
 import asyncio
 import socket
 import queue
+import argparse
 
 import yaml
 
@@ -226,3 +227,10 @@ def create_cache(cache_type, options):
     else:
         raise NotImplementedError("Unsupported cache type!")
     return cache
+
+
+def check_loglevel(arg):
+    try:
+        return LogLevel[arg]
+    except (IndexError, KeyError):
+        raise argparse.ArgumentTypeError("%s is not valid loglevel" % (repr(arg),))
