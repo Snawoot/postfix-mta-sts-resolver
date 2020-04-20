@@ -111,3 +111,5 @@ man/*.?
 *.cer
 *.crt
 *.key
+
+*.snap
