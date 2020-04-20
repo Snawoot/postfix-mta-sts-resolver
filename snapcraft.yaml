@@ -4,7 +4,7 @@ summary: Policy-server for Postfix which handles MTA-STS resolving
 description: |
   Daemon which provides TLS client policy for Postfix via socketmap, 
   according to domain MTA-STS policy.
-confinement: devmode
+confinement: strict
 base: core18
 
 parts:
@@ -14,10 +14,20 @@ parts:
     python-packages:
       - "aiosqlite>=0.10.0"
       - "aioredis>=1.2.0"
+    build-packages:
+      - gcc
+      - make
+      - python3-dev
+      - libffi-dev
   postfix-mta-sts-resolver:
     plugin: python
     python-version: python3
     source: .
+    build-packages:
+      - gcc
+      - make
+      - python3-dev
+      - libffi-dev
 
 apps:
   daemon:
