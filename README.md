@@ -1,7 +1,7 @@
 postfix-mta-sts-resolver
 ========================
 
-[![Build Status](https://travis-ci.org/Snawoot/postfix-mta-sts-resolver.svg?branch=master)](https://travis-ci.org/Snawoot/postfix-mta-sts-resolver) [![Coverage](https://img.shields.io/badge/coverage-97%25-4dc71f.svg)](https://travis-ci.org/Snawoot/postfix-mta-sts-resolver) [![PyPI - Downloads](https://img.shields.io/pypi/dm/postfix-mta-sts-resolver.svg?color=4dc71f&label=PyPI%20downloads)](https://pypistats.org/packages/postfix-mta-sts-resolver) [![PyPI](https://img.shields.io/pypi/v/postfix-mta-sts-resolver.svg)](https://pypi.org/project/postfix-mta-sts-resolver/) [![PyPI - Status](https://img.shields.io/pypi/status/postfix-mta-sts-resolver.svg)](https://pypi.org/project/postfix-mta-sts-resolver/) [![PyPI - License](https://img.shields.io/pypi/l/postfix-mta-sts-resolver.svg?color=4dc71f)](https://pypi.org/project/postfix-mta-sts-resolver/)
+[![Build Status](https://travis-ci.org/Snawoot/postfix-mta-sts-resolver.svg?branch=master)](https://travis-ci.org/Snawoot/postfix-mta-sts-resolver) [![Coverage](https://img.shields.io/badge/coverage-97%25-4dc71f.svg)](https://travis-ci.org/Snawoot/postfix-mta-sts-resolver) [![PyPI - Downloads](https://img.shields.io/pypi/dm/postfix-mta-sts-resolver.svg?color=4dc71f&label=PyPI%20downloads)](https://pypistats.org/packages/postfix-mta-sts-resolver) [![PyPI](https://img.shields.io/pypi/v/postfix-mta-sts-resolver.svg)](https://pypi.org/project/postfix-mta-sts-resolver/) [![PyPI - Status](https://img.shields.io/pypi/status/postfix-mta-sts-resolver.svg)](https://pypi.org/project/postfix-mta-sts-resolver/) [![PyPI - License](https://img.shields.io/pypi/l/postfix-mta-sts-resolver.svg?color=4dc71f)](https://pypi.org/project/postfix-mta-sts-resolver/) [![postfix-mta-sts-resolver](https://snapcraft.io//postfix-mta-sts-resolver/badge.svg)](https://snapcraft.io/postfix-mta-sts-resolver)
 
 Daemon which provides TLS client policy for Postfix via socketmap, according to domain MTA-STS policy. Current support of RFC8461 is limited - daemon lacks some minor features:
 
@@ -76,6 +76,16 @@ docker run -d \
 ```
 
 Daemon will be up and running, listening on local interface on port 8461. Default configuration baked into docker image uses SQLite for cache stored in persistent docker volume. You may override this configuration with your own config file by mapping it into container with option `-v my_config.yml:/etc/mta-sta-daemon.yml`.
+
+### Method 5. Snap Store
+
+[![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-black.svg)](https://snapcraft.io/postfix-mta-sts-resolver)
+
+```bash
+sudo snap install postfix-mta-sts-resolver
+```
+
+NOTE: in snap layout `mta-sta-daemon` program is named `postfix-mta-sts-resolver.daemon` and `mta-sts-query` is named `postfix-mta-sts-resolver.query`.
 
 ### Common installation notes
 
