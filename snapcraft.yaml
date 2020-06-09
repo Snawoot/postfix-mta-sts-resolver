@@ -8,18 +8,11 @@ confinement: strict
 base: core20
 
 parts:
-  extras:
+  postfix-mta-sts-resolver:
     plugin: python
     python-packages:
       - "aiosqlite>=0.10.0"
       - "aioredis>=1.2.0"
-    build-packages:
-      - gcc
-      - make
-      - python3-dev
-      - libffi-dev
-  postfix-mta-sts-resolver:
-    plugin: python
     source: .
     build-packages:
       - gcc
