@@ -11,6 +11,7 @@ parts:
   postfix-mta-sts-resolver:
     plugin: python
     python-packages:
+      - "wheel"
       - "aiosqlite>=0.10.0"
       - "aioredis>=1.2.0"
     source: .
