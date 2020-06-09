@@ -10,7 +10,6 @@ base: core20
 parts:
   extras:
     plugin: python
-    python-version: python3
     python-packages:
       - "aiosqlite>=0.10.0"
       - "aioredis>=1.2.0"
