@@ -5,7 +5,7 @@ description: |
   Daemon which provides TLS client policy for Postfix via socketmap, 
   according to domain MTA-STS policy.
 confinement: strict
-base: core18
+base: core20
 
 parts:
   extras:
