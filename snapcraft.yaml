@@ -5,15 +5,23 @@ description: |
   Daemon which provides TLS client policy for Postfix via socketmap, 
   according to domain MTA-STS policy.
 confinement: strict
-base: core20
+base: core18
 
 parts:
-  postfix-mta-sts-resolver:
+  extras:
     plugin: python
+    python-version: python3
     python-packages:
-      - "wheel"
       - "aiosqlite>=0.10.0"
       - "aioredis>=1.2.0"
+    build-packages:
+      - gcc
+      - make
+      - python3-dev
+      - libffi-dev
+  postfix-mta-sts-resolver:
+    plugin: python
+    python-version: python3
     source: .
     build-packages:
       - gcc
