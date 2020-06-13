@@ -14,7 +14,7 @@ from .base_cache import CacheEntry
 from . import netstring
 
 
-ZoneEntry = collections.namedtuple('ZoneEntry', ('strict', 'resolver'))
+ZoneEntry = collections.namedtuple('ZoneEntry', ('strict', 'resolver', 'require_sni'))
 
 
 # pylint: disable=too-many-instance-attributes
@@ -37,11 +37,13 @@ class STSSocketmapResponder:
         # Construct configurations and resolvers for every socketmap name
         self._default_zone = ZoneEntry(cfg["default_zone"]["strict_testing"],
                                        STSResolver(loop=loop,
-                                                   timeout=cfg["default_zone"]["timeout"]))
+                                                   timeout=cfg["default_zone"]["timeout"]),
+                                       cfg["default_zone"]["require_sni"])
 
         self._zones = dict((k, ZoneEntry(zone["strict_testing"],
                                          STSResolver(loop=loop,
-                                                     timeout=zone["timeout"])))
+                                                     timeout=zone["timeout"]),
+                                         zone["require_sni"]))
                            for k, zone in cfg["zones"].items())
 
         self._cache = cache
@@ -220,6 +222,8 @@ class STSSocketmapResponder:
                 assert cached.pol_body['mx'], "Empty MX list for restrictive policy!"
                 mxlist = [mx.lstrip('*') for mx in set(cached.pol_body['mx'])]
                 resp = "OK secure match=" + ":".join(mxlist)
+                if zone_cfg.require_sni:
+                    resp += " servername=hostname"
                 return netstring.encode(resp.encode('utf-8'))
         else:
             return netstring.encode(b'NOTFOUND ')
