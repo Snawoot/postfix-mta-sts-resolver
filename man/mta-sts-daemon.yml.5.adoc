@@ -55,7 +55,7 @@ It is unaffected by `cache_grace` and vice versa. Default: 86400
 
 * *strict_testing*: (_bool_) enforce policy for testing domains
 * *timeout*: (_int_) network operations timeout for resolver in that zone
-* *require_sni*: (_bool_) add option `servername=hostname` to policy responses to make Postfix send SNI in TLS handshake as required by RFC 8461. Requires Postfix version 3.4+.
+* *require_sni*: (_bool_) add option `servername=hostname` to policy responses to make Postfix send SNI in TLS handshake as required by RFC 8461. Requires Postfix version 3.4+. Default: true
 
 *zones*::
 
