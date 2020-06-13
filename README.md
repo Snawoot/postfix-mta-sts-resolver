@@ -13,7 +13,7 @@ Server has configurable cache backend which allows to store cached STS policies 
 
 ## Requirements
 
-* Postfix 2.10 and later
+* Postfix 3.4+ (or Postfix 2.10+ if missing Postfix SNI feature is tolerable. In that case you have to set zone option `require_sni` to `false` in MTA-STS daemon config)
 * Python 3.5.3+ (see ["Systems without Python 3.5+"](#systems-without-python-35) below if you haven't one, or use Docker installation method)
 * aiodns
 * aiohttp
