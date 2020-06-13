@@ -1,12 +1,12 @@
-test good.loc	OK secure match=mail.loc
-test [good.loc]	OK secure match=mail.loc
-test [good.loc]:123	OK secure match=mail.loc
-test good.loc:123	OK secure match=mail.loc
-test2 good.loc	OK secure match=mail.loc
-test good.loc.	OK secure match=mail.loc
+test good.loc	OK secure match=mail.loc servername=hostname
+test [good.loc]	OK secure match=mail.loc servername=hostname
+test [good.loc]:123	OK secure match=mail.loc servername=hostname
+test good.loc:123	OK secure match=mail.loc servername=hostname
+test2 good.loc	OK secure match=mail.loc servername=hostname
+test good.loc.	OK secure match=mail.loc servername=hostname
 test .good.loc	NOTFOUND 
 test valid-none.loc	NOTFOUND 
-test testing.loc	OK secure match=mail.loc
+test testing.loc	OK secure match=mail.loc servername=hostname
 test no-record.loc	NOTFOUND 
 test [no-record.loc]	NOTFOUND 
 test .no-record.loc	NOTFOUND 

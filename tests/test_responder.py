@@ -184,7 +184,7 @@ async def test_fast_expire(responder):
         await asyncio.sleep(2)
         writer.write(netstring.encode(b'test fast-expire.loc'))
         answer_b = await answer()
-        assert answer_a == answer_b == b'OK secure match=mail.loc'
+        assert answer_a == answer_b == b'OK secure match=mail.loc servername=hostname'
     finally:
         writer.close()
 
