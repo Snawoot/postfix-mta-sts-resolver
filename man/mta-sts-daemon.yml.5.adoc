@@ -16,15 +16,15 @@ and manipulation of MTA-STS mode.
 
 The file is in YAML syntax with the following elements:
 
-*host*: (_str_) daemon bind address
+*host*: (_str_) daemon bind address. Default: 127.0.0.1
 
-*port*: (_int_) daemon bind port
+*port*: (_int_) daemon bind port. Default: 8461
 
 *path*: (_str_) daemon UNIX socket bind address (path). If specified, *host* and *port* are ignored and UNIX socket is bound instead of TCP.
 
 *mode*: (_int_) file mode for daemon UNIX socket. If not specified default filemode is used. This option has effect only when UNIX socket is used. If file mode specified in octal form (most common case), it has to be prepended with leading zero. Example: 0666
 
-*reuse_port*: (_bool_) allow multiple instances to share same port (available on Unix, Windows)
+*reuse_port*: (_bool_) allow multiple instances to share same port (available on Unix, Windows). Default: true
 
 *cache_grace*: (_float_) age of cache entries in seconds which do not require policy refresh and update. Default: 60
 
@@ -32,14 +32,14 @@ The file is in YAML syntax with the following elements:
 
 *cache*::
 
-* *type*: (_str_: _internal_|_sqlite_|_redis_) cache backend type
+* *type*: (_str_: _internal_|_sqlite_|_redis_) cache backend type. Default: internal
 * *options*:
  ** Options for _internal_ type:
-  *** *cache_size*: (_int_) number of cache entries to store in memory
+  *** *cache_size*: (_int_) number of cache entries to store in memory. Default: 10000
  ** Options for _sqlite_ type:
   *** *filename*: (_str_) path to database file
-  *** *threads*: (_int_) number of threads in pool for SQLite connections
-  *** *timeout*: (_float_) timeout in seconds for acquiring connection from pool or DB lock
+  *** *threads*: (_int_) number of threads in pool for SQLite connections. Default: number of CPUs
+  *** *timeout*: (_float_) timeout in seconds for acquiring connection from pool or DB lock. Default: 5
  ** Options for _redis_ type:
   *** All parameters are passed to `aioredis.create_redis_pool` [0]. Check there for a parameter reference.
 
@@ -53,8 +53,8 @@ It is unaffected by `cache_grace` and vice versa. Default: 86400
 
 *default_zone*::
 
-* *strict_testing*: (_bool_) enforce policy for testing domains
-* *timeout*: (_int_) network operations timeout for resolver in that zone
+* *strict_testing*: (_bool_) enforce policy for testing domains. Default: false
+* *timeout*: (_int_) network operations timeout for resolver in that zone. Default: 4
 * *require_sni*: (_bool_) add option `servername=hostname` to policy responses to make Postfix send SNI in TLS handshake as required by RFC 8461. Requires Postfix version 3.4+. Default: true
 
 *zones*::
