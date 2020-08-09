@@ -10,6 +10,18 @@ Daemon which provides TLS client policy for Postfix via socketmap, according to 
 
 Server has configurable cache backend which allows to store cached STS policies in memory (`internal`), file (`sqlite`) or in Redis database (`redis`).
 
+---
+
+:heart: :heart: :heart:
+
+You can say thanks to the author by donations to these wallets:
+
+- ETH: `0xB71250010e8beC90C5f9ddF408251eBA9dD7320e`
+- BTC:
+  - Legacy: `1N89PRvG1CSsUk9sxKwBwudN6TjTPQ1N8a`
+  - Segwit: `bc1qc0hcyxc000qf0ketv4r44ld7dlgmmu73rtlntw`
+
+---
 
 ## Requirements
 
