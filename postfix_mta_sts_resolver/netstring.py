@@ -145,4 +145,5 @@ def decode(data):
             yield b''.join(res)
     except WantRead:
         if reader.pending():
+            # pylint: disable=raise-missing-from
             raise IncompleteNetstring("Input ends on unfinished string.")
