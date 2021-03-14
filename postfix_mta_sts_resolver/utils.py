@@ -11,6 +11,7 @@ import yaml
 from . import defaults
 
 
+# pylint: disable=invalid-name
 class LogLevel(enum.IntEnum):
     debug = logging.DEBUG
     info = logging.INFO
@@ -29,6 +30,7 @@ class OverflowingQueue(queue.Queue):
             return queue.Queue.put(self, item, block, timeout)
         except queue.Full:
             pass
+        return None
 
     def put_nowait(self, item):
         return self.put(item, False)
@@ -234,4 +236,5 @@ def check_loglevel(arg):
     try:
         return LogLevel[arg]
     except (IndexError, KeyError):
+        # pylint: disable=raise-missing-from
         raise argparse.ArgumentTypeError("%s is not valid loglevel" % (repr(arg),))

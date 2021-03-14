@@ -7,7 +7,8 @@ PYTHON="${PYTHON:-python3}"
 # run under travis, but not under autopkgtest
 if [ -z "${AUTOPKGTEST_TMP+x}" ] ; then
     apt-get update
-    apt-get install redis-server dnsmasq lsof nginx-extras tinyproxy -y
+    apt-get install -y redis-server dnsmasq lsof nginx-extras tinyproxy \
+		build-essential libssl-dev libffi-dev python3-dev cargo
     systemctl start redis-server || { journalctl -xe ; false ; }
     "$PYTHON" -m pip install cryptography
     "$PYTHON" -m pip install tox
@@ -52,7 +53,7 @@ systemctl restart nginx || { journalctl -xe ; false ; }
 
 # run under travis, but not under autopkgtest
 if [ -z "${AUTOPKGTEST_TMP+x}" ] ; then
-    install -m 644 -o root -g root tests/tinyproxy.conf /etc/tinyproxy.conf
+    install -m 644 -o root -g root tests/tinyproxy.conf /etc/tinyproxy/tinyproxy.conf
     systemctl restart tinyproxy || { journalctl -xe ; false ; }
     tests/expedite_proxy_startup.sh || { journalctl -xe ; false ; }
 else

@@ -260,6 +260,7 @@ class STSSocketmapResponder:
                     except netstring.WantRead:
                         part = await reader.read(CHUNK)
                         if not part:
+                            # pylint: disable=raise-missing-from
                             raise EndOfStream()
                         self._logger.debug("Read: %s", repr(part))
                         stream_reader.feed(part)

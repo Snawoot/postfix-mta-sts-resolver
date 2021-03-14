@@ -1,11 +1,11 @@
 language: python
-dist: xenial
+dist: bionic
 
 matrix:
   include:
-    - python: 3.8
+    - python: 3.9
       env: TOXENV=lint
-    - python: 3.8
+    - python: 3.9
       env: TOXENV=cover
     - python: 3.5
       env: TOXENV=py35
@@ -15,14 +15,14 @@ matrix:
       env: TOXENV=py37
     - python: 3.8
       env: TOXENV=py38
-    - python: 3.5
-      env: TOXENV=py35-uvloop
-    - python: 3.6
-      env: TOXENV=py36-uvloop
+    - python: 3.9
+      env: TOXENV=py39
     - python: 3.7
       env: TOXENV=py37-uvloop
     - python: 3.8
       env: TOXENV=py38-uvloop
+    - python: 3.9
+      env: TOXENV=py39-uvloop
 install:
   - "sudo -H env PYTHON=\"$(command -v python)\" tests/install.debian.sh"
 script:
