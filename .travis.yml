@@ -1,11 +1,11 @@
 language: python
-dist: xenial
+dist: bionic
 
 matrix:
   include:
-    - python: 3.8
+    - python: 3.9
       env: TOXENV=lint
-    - python: 3.8
+    - python: 3.9
       env: TOXENV=cover
     - python: 3.5
       env: TOXENV=py35
@@ -28,6 +28,8 @@ matrix:
     - python: 3.9
       env: TOXENV=py39-uvloop
 install:
+  - "sudo apt-get update"
+  - "sudo apt-get install -y build-essential libssl-dev libffi-dev python3-dev cargo"
   - "sudo -H env PYTHON=\"$(command -v python)\" tests/install.debian.sh"
 script:
   - tox
