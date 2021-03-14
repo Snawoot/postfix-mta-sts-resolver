@@ -2,6 +2,8 @@
 #bind-interfaces
 resolv-file=/etc/resolv-dnsmasq.conf
 
+address=/loc/127.0.0.1
+
 address=/mta-sts.bad-record1.loc/127.0.0.1
 txt-record=_mta-sts.bad-record1.loc,"id=20180907T090909; v=STSv1;"
 
