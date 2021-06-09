@@ -8,10 +8,8 @@ import pytest
 from postfix_mta_sts_resolver import netstring
 from postfix_mta_sts_resolver.responder import STSSocketmapResponder
 import postfix_mta_sts_resolver.utils as utils
-from async_generator import yield_, async_generator
 
 @pytest.fixture
-@async_generator
 async def responder(event_loop):
     import postfix_mta_sts_resolver.utils as utils
     cfg = utils.populate_cfg_defaults(None)
@@ -25,7 +23,7 @@ async def responder(event_loop):
     resp = STSSocketmapResponder(cfg, event_loop, cache)
     await resp.start()
     result = resp, cfg['host'], cfg['port']
-    await yield_(result)
+    yield result
     await resp.stop()
     await cache.teardown()
 
