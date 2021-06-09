@@ -5,19 +5,17 @@ import pytest
 
 from postfix_mta_sts_resolver import base_cache, utils
 from postfix_mta_sts_resolver.proactive_fetcher import STSProactiveFetcher
-from async_generator import yield_, async_generator
 
 from postfix_mta_sts_resolver.utils import populate_cfg_defaults, create_cache
 
 
 @pytest.fixture
-@async_generator
 async def cache():
     cfg = populate_cfg_defaults(None)
     cache = create_cache(cfg['cache']['type'],
                          cfg['cache']['options'])
     await cache.setup()
-    await yield_(cache)
+    yield cache
     await cache.teardown()
 
 
