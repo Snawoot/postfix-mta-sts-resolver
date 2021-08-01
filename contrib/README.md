@@ -2,7 +2,7 @@
 
 ## RHEL/CentOS/OEL
 
-The default Python version in RHEL7 (and clones) is too old, you need at least 3.5 to run postfix-mta-sts. However, Python 3.6 is availale in the Software collections
+The default Python version in RHEL7 (and clones) is too old, you need at least 3.5 to run postfix-mta-sts. However, Python 3.6 is available in the Software collections
 
 For other distributions please edit the Systemd Unit file accordingly
 
