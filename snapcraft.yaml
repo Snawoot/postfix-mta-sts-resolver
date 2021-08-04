@@ -13,7 +13,7 @@ parts:
     python-version: python3
     python-packages:
       - "aiosqlite>=0.10.0"
-      - "aioredis>=1.2.0"
+      - "aioredis>=1.2.0,<2.0.0"
     build-packages:
       - gcc
       - make
