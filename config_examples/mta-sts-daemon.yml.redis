@@ -5,9 +5,10 @@ shutdown_timeout: 20
 cache:
   type: redis
   options:
-    address: "redis://127.0.0.1/0?timeout=5"
-    minsize: 5
-    maxsize: 25
+    url: "redis://127.0.0.1/0"
+    max_connections: 25
+    socket_timeout: 1.0
+    socket_connect_timeout: 1.0
 default_zone:
   strict_testing: false
   timeout: 4

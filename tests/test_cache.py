@@ -21,8 +21,8 @@ async def setup_cache(cache_type, cache_opts):
     ("internal", {}, False),
     ("sqlite", {}, True),
     ("sqlite", {}, False),
-    ("redis", {"address": "redis://127.0.0.1/0?timeout=5"}, True),
-    ("redis", {"address": "redis://127.0.0.1/0?timeout=5"}, False)
+    ("redis", {"url": "redis://127.0.0.1/0?socket_timeout=5&socket_connect_timeout=5"}, True),
+    ("redis", {"url": "redis://127.0.0.1/0?socket_timeout=5&socket_connect_timeout=5"}, False)
 ])
 @pytest.mark.asyncio
 async def test_cache_lifecycle(cache_type, cache_opts, safe_set):
@@ -46,7 +46,7 @@ async def test_cache_lifecycle(cache_type, cache_opts, safe_set):
 @pytest.mark.parametrize("cache_type,cache_opts", [
     ("internal", {}),
     ("sqlite", {}),
-    ("redis", {"address": "redis://127.0.0.1/0?timeout=5"}),
+    ("redis", {"url": "redis://127.0.0.1/0?socket_timeout=5&socket_connect_timeout=5"}),
 ])
 @pytest.mark.asyncio
 async def test_proactive_fetch_ts_lifecycle(cache_type, cache_opts):
@@ -78,12 +78,12 @@ async def test_proactive_fetch_ts_lifecycle(cache_type, cache_opts):
     ("sqlite", {}, 3, 4),
     ("sqlite", {}, 0, 4),
     ("sqlite", {}, constants.DOMAIN_QUEUE_LIMIT*2, constants.DOMAIN_QUEUE_LIMIT),
-    ("redis", {"address": "redis://127.0.0.1/0?timeout=5"}, 3, 1),
-    ("redis", {"address": "redis://127.0.0.1/0?timeout=5"}, 3, 2),
-    ("redis", {"address": "redis://127.0.0.1/0?timeout=5"}, 3, 3),
-    ("redis", {"address": "redis://127.0.0.1/0?timeout=5"}, 3, 4),
-    ("redis", {"address": "redis://127.0.0.1/0?timeout=5"}, 0, 4),
-    ("redis", {"address": "redis://127.0.0.1/0?timeout=5"}, constants.DOMAIN_QUEUE_LIMIT*2, constants.DOMAIN_QUEUE_LIMIT),
+    ("redis", {"url": "redis://127.0.0.1/0?socket_timeout=5&socket_connect_timeout=5"}, 3, 1),
+    ("redis", {"url": "redis://127.0.0.1/0?socket_timeout=5&socket_connect_timeout=5"}, 3, 2),
+    ("redis", {"url": "redis://127.0.0.1/0?socket_timeout=5&socket_connect_timeout=5"}, 3, 3),
+    ("redis", {"url": "redis://127.0.0.1/0?socket_timeout=5&socket_connect_timeout=5"}, 3, 4),
+    ("redis", {"url": "redis://127.0.0.1/0?socket_timeout=5&socket_connect_timeout=5"}, 0, 4),
+    ("redis", {"url": "redis://127.0.0.1/0?socket_timeout=5&socket_connect_timeout=5"}, constants.DOMAIN_QUEUE_LIMIT*2, constants.DOMAIN_QUEUE_LIMIT),
 ])
 @pytest.mark.timeout(10)
 @pytest.mark.asyncio
