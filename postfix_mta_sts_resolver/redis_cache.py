@@ -31,7 +31,7 @@ class RedisCache(BaseCache):
             defaults.REDIS_TIMEOUT)
         self._opts['socket_connect_timeout'] = self._opts.get(
             'socket_connect_timeout', defaults.REDIS_CONNECT_TIMEOUT)
-        self._opts['encoding'] = None
+        self._opts['encoding'] = 'utf-8'
         self._pool = None
 
     async def setup(self):
@@ -40,7 +40,7 @@ class RedisCache(BaseCache):
     async def get(self, key):
         assert self._pool is not None
         key = key.encode('utf-8')
-        res = await self._pool.zrevrange(key, 0, 0, "WITHSCORES")
+        res = await self._pool.zrevrange(key, 0, 0, withscores=True)
         if not res:
             return None
         packed, ts = res[0]  # pylint: disable=invalid-name
