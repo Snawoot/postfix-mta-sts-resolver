@@ -5,7 +5,7 @@ import aioredis
 from . import defaults
 from .base_cache import BaseCache, CacheEntry
 
-# TODO: Remove once fixed: https://github.com/aio-libs/aioredis-py/issues/1115
+# Remove once fixed: https://github.com/aio-libs/aioredis-py/issues/1115
 aioredis.Redis.__del__ = lambda *args: None  # type: ignore
 
 def pack_entry(entry):
