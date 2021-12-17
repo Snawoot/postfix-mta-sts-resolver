@@ -13,7 +13,7 @@ async def setup_cache(cache_type, cache_opts):
     cache = utils.create_cache(cache_type, cache_opts)
     await cache.setup()
     if cache_type == 'redis':
-        cache._pool.flushdb()
+        await cache._pool.flushdb()
     return cache, tmpfile
 
 @pytest.mark.parametrize("cache_type,cache_opts,safe_set", [
