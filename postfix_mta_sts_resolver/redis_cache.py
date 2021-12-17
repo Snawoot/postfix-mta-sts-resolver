@@ -5,6 +5,8 @@ import aioredis
 from . import defaults
 from .base_cache import BaseCache, CacheEntry
 
+# Remove once fixed: https://github.com/aio-libs/aioredis-py/issues/1115
+aioredis.Redis.__del__ = lambda *args: None  # type: ignore
 
 def pack_entry(entry):
     ts, pol_id, pol_body = entry  # pylint: disable=invalid-name,unused-variable
@@ -25,18 +27,20 @@ def unpack_entry(packed):
 class RedisCache(BaseCache):
     def __init__(self, **opts):
         self._opts = dict(opts)
-        self._opts['timeout'] = self._opts.get('timeout',
-                                               defaults.REDIS_TIMEOUT)
-        self._opts['encoding'] = None
+        self._opts['socket_timeout'] = self._opts.get('socket_timeout',
+            defaults.REDIS_TIMEOUT)
+        self._opts['socket_connect_timeout'] = self._opts.get(
+            'socket_connect_timeout', defaults.REDIS_CONNECT_TIMEOUT)
+        self._opts['encoding'] = 'utf-8'
         self._pool = None
 
     async def setup(self):
-        self._pool = await aioredis.create_redis_pool(**self._opts)
+        self._pool = await aioredis.from_url(**self._opts)
 
     async def get(self, key):
         assert self._pool is not None
         key = key.encode('utf-8')
-        res = await self._pool.zrevrange(key, 0, 0, "WITHSCORES")
+        res = await self._pool.zrevrange(key, 0, 0, withscores=True)
         if not res:
             return None
         packed, ts = res[0]  # pylint: disable=invalid-name
@@ -50,10 +54,10 @@ class RedisCache(BaseCache):
         key = key.encode('utf-8')
 
         # Write
-        pipe = self._pool.pipeline()
-        pipe.zadd(key, ts, packed)
-        pipe.zremrangebyrank(key, 0, -2)
-        await pipe.execute()
+        async with self._pool.pipeline(transaction=True) as pipe:
+            pipe.zadd(key, {packed: ts})
+            pipe.zremrangebyrank(key, 0, -2)
+            await pipe.execute()
 
     async def scan(self, token, amount_hint):
         assert self._pool is not None
@@ -83,5 +87,4 @@ class RedisCache(BaseCache):
 
     async def teardown(self):
         assert self._pool is not None
-        self._pool.close()
-        await self._pool.wait_closed()
+        await self._pool.close()
