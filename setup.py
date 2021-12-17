@@ -7,7 +7,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()  # pylint: disable=invalid-name
 
 setup(name='postfix_mta_sts_resolver',
-      version='1.0.1',
+      version='1.1.0',
       description='Daemon which provides TLS client policy for Postfix '
                   'via socketmap, according to domain MTA-STS policy',
       url='https://github.com/Snawoot/postfix-mta-sts-resolver',
