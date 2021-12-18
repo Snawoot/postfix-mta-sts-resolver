@@ -36,7 +36,7 @@ class RedisCache(BaseCache):
 
     async def setup(self):
         url = self._opts['url']
-        opts = dict((k,v) for k, v in self._opts if k != 'url')
+        opts = dict((k,v) for k, v in self._opts.items() if k != 'url')
         self._pool = aioredis.from_url(url, **opts)
 
     async def get(self, key):
