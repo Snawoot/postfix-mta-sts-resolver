@@ -41,7 +41,7 @@ The file is in YAML syntax with the following elements:
   *** *threads*: (_int_) number of threads in pool for SQLite connections. Default: number of CPUs
   *** *timeout*: (_float_) timeout in seconds for acquiring connection from pool or DB lock. Default: 5
  ** Options for _redis_ type:
-  *** All parameters are passed to `aioredis.create_redis_pool` [0]. Check there for a parameter reference.
+  *** All parameters are passed to `aioredis.from_url` [0]. Check there for a parameter reference.
 
 *proactive_policy_fetching*::
 
@@ -98,4 +98,4 @@ domains operate under "testing" mode.
 == Notes
 
 0.::
-  https://aioredis.readthedocs.io/en/latest/api_reference.html#aioredis.create_redis_pool
+  https://aioredis.readthedocs.io/en/latest/api/high-level/#aioredis.client.Redis.from_url
