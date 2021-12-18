@@ -35,7 +35,8 @@ class RedisCache(BaseCache):
         self._pool = None
 
     async def setup(self):
-        self._pool = await aioredis.from_url(**self._opts)
+        url = self._opts['address']
+        self._pool = await aioredis.from_url(url, **self._opts)
 
     async def get(self, key):
         assert self._pool is not None
