@@ -44,7 +44,7 @@ mkdir -p /tmp/certs /tmp/bad-certs
 
 mkdir -p /usr/local/share/ca-certificates/test
 install -m 644 -o root -g root /tmp/certs/ca.pem /usr/local/share/ca-certificates/test/test-ca.crt
-update-ca-certificates
+update-ca-certificates 2>&1
 
 
 install -m 644 tests/nginx.conf /etc/nginx/nginx.conf
