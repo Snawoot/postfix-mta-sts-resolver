@@ -30,7 +30,7 @@ You can say thanks to the author by donations to these wallets:
 * aiodns
 * aiohttp
 * aiosqlite
-* aioredis
+* redis-py
 * PyYAML
 * (optional) uvloop
 

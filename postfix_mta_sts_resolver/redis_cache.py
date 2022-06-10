@@ -1,12 +1,9 @@
 import json
 import uuid
 
-import aioredis
+from redis import asyncio as aioredis
 from . import defaults
 from .base_cache import BaseCache, CacheEntry
-
-# Remove once fixed: https://github.com/aio-libs/aioredis-py/issues/1115
-aioredis.Redis.__del__ = lambda *args: None  # type: ignore
 
 def pack_entry(entry):
     ts, pol_id, pol_body = entry  # pylint: disable=invalid-name,unused-variable
