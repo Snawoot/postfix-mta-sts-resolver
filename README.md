@@ -231,7 +231,7 @@ Run `make` in project directory in order to build virtualenv. As result of it, n
 make VENV=~/postfix-mta-sts-resolver
 ```
 
-Such virtual environment can be moved to another machine of similar type (as far python interpreter is compatible with new environment). If virtualenv is placed into same location on new machine, application can be ruined this way:
+Such virtual environment can be moved to another machine of similar type (as far python interpreter is compatible with new environment). If virtualenv is placed into same location on new machine, application can be run this way:
 
 ```bash
 venv/bin/mta-sts-daemon
