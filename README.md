@@ -161,14 +161,14 @@ optional arguments:
 
 By default mta-sts-daemon allows its multiple instances to share same port (on Linux/FreeBSD/Windows). Therefore, restart or upgrade of daemon can be performed seamlessly. Set of unit files for systemd in [contrib/](contrib/) directory implements "reload" by mean of running backup instance when main instance is getting restarted.
 
-Also on Linux and FreeBSD, load distribited across all processes (with SO\_REUSEPORT and SO\_REUSEPORT\_LB respectively).
+Also on Linux and FreeBSD, load distributed across all processes (with SO\_REUSEPORT and SO\_REUSEPORT\_LB respectively).
 
 
 ## MTA-STS Daemon configuration
 
-See [configuration man page](https://github.com/Snawoot/postfix-mta-sts-resolver/blob/master/man/mta-sts-daemon.yml.5.adoc) and [config\_examples/](https://github.com/Snawoot/postfix-mta-sts-resolver/tree/master/config_examples) directory. Default config location is: `/etc/mta-sts-daemon.yml`, but it can be overriden with command line option `-c FILE`.
+See [configuration man page](https://github.com/Snawoot/postfix-mta-sts-resolver/blob/master/man/mta-sts-daemon.yml.5.adoc) and [config\_examples/](https://github.com/Snawoot/postfix-mta-sts-resolver/tree/master/config_examples) directory. Default config location is: `/etc/mta-sts-daemon.yml`, but it can be overridden with command line option `-c FILE`.
 
-All options is self-explanatory, only exception is `strict_testing` option. If set to `true`, STS policy will be enforced even if domain announces `testing` MTA-STS mode. Useful for premature incorporation of MTA-STS against domains hesistating to go `enforce`. Please use with caution.
+All options is self-explanatory, only exception is `strict_testing` option. If set to `true`, STS policy will be enforced even if domain announces `testing` MTA-STS mode. Useful for premature incorporation of MTA-STS against domains hesitating to go `enforce`. Please use with caution.
 
 
 ## Postfix configuration
@@ -208,7 +208,7 @@ Postfix log should show `Verified TLS connection established to ...` instead of 
 
 ### Systems without Python 3.5+
 
-Some people may find convenient to install latest python from source into `/opt` directory. This way you can have separate python installation not interferring with system packages by any means. Download latest python source from [python.org](https://www.python.org/), unpack and run in unpacked source directory:
+Some people may find convenient to install latest python from source into `/opt` directory. This way you can have separate python installation not interfering with system packages by any means. Download latest python source from [python.org](https://www.python.org/), unpack and run in unpacked source directory:
 
 ```bash
 ./configure --prefix=/opt --enable-optimizations && make -j $[ $(nproc) + 1 ] && make test && sudo make install
@@ -225,13 +225,13 @@ Executable files of `postfix-mta-sts-resolver` will be available in `/opt/bin/mt
 
 ### Building virtualenv
 
-Run `make` in project directory in order to build virtualenv. As result of it, new directory `venv` shall appear. `venv` contains interpreter and all required dependencies, i.e. encloses package with depencencies in separate environment. It is possible to specify alternative path where virtualenv directory shall be placed. Specify VENV variable for `make` command. Example:
+Run `make` in project directory in order to build virtualenv. As result of it, new directory `venv` shall appear. `venv` contains interpreter and all required dependencies, i.e. encloses package with dependencies in separate environment. It is possible to specify alternative path where virtualenv directory shall be placed. Specify VENV variable for `make` command. Example:
 
 ```bash
 make VENV=~/postfix-mta-sts-resolver
 ```
 
-Such virtual environment can be moved to another machine of similar type (as far python interpreter is compatible with new environment). If virtualenv is placed into same location on new machine, application can be runned this way:
+Such virtual environment can be moved to another machine of similar type (as far python interpreter is compatible with new environment). If virtualenv is placed into same location on new machine, application can be ruined this way:
 
 ```bash
 venv/bin/mta-sts-daemon
