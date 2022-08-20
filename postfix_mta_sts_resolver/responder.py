@@ -13,6 +13,7 @@ from .utils import create_custom_socket, filter_domain, is_ipaddr
 from .base_cache import CacheEntry
 from . import netstring
 
+REQUEST_ENCODING = 'utf-8'
 
 ZoneEntry = collections.namedtuple('ZoneEntry', ('strict', 'resolver', 'require_sni'))
 
@@ -164,7 +165,7 @@ class STSSocketmapResponder:
         have_policy = True
 
         # Parse request and canonicalize domain
-        req_zone, _, req_domain = raw_req.decode('ascii').partition(' ')
+        req_zone, _, req_domain = raw_req.decode(REQUEST_ENCODING).partition(' ')
         domain = filter_domain(req_domain)
 
         # Skip lookups for parent domain policies
