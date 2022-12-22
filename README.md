@@ -3,10 +3,16 @@ postfix-mta-sts-resolver
 
 [![Build Status](https://travis-ci.org/Snawoot/postfix-mta-sts-resolver.svg?branch=master)](https://travis-ci.org/Snawoot/postfix-mta-sts-resolver) [![Coverage](https://img.shields.io/badge/coverage-97%25-4dc71f.svg)](https://travis-ci.org/Snawoot/postfix-mta-sts-resolver) [![PyPI - Downloads](https://img.shields.io/pypi/dm/postfix-mta-sts-resolver.svg?color=4dc71f&label=PyPI%20downloads)](https://pypistats.org/packages/postfix-mta-sts-resolver) [![PyPI](https://img.shields.io/pypi/v/postfix-mta-sts-resolver.svg)](https://pypi.org/project/postfix-mta-sts-resolver/) [![PyPI - Status](https://img.shields.io/pypi/status/postfix-mta-sts-resolver.svg)](https://pypi.org/project/postfix-mta-sts-resolver/) [![PyPI - License](https://img.shields.io/pypi/l/postfix-mta-sts-resolver.svg?color=4dc71f)](https://pypi.org/project/postfix-mta-sts-resolver/) [![postfix-mta-sts-resolver](https://snapcraft.io//postfix-mta-sts-resolver/badge.svg)](https://snapcraft.io/postfix-mta-sts-resolver) ![CodeQL](https://github.com/Snawoot/postfix-mta-sts-resolver/workflows/CodeQL/badge.svg)
 
-Daemon which provides TLS client policy for Postfix via socketmap, according to domain MTA-STS policy. Current support of RFC8461 is limited - daemon lacks some minor features:
+Daemon which provides TLS client policy for Postfix via socketmap, according to domain MTA-STS policy.
 
-* Fetch error reporting
-* Fetch ratelimit (but actual fetch rate partially restricted with `cache_grace` config option).
+Current support of [RFC 8461](https://www.rfc-editor.org/rfc/rfc8461) is limited:
+
+* [MTA-STS policy overrides DANE TLS authentication](#warning-mta-sts-policy-overrides-dane-tls-authentication) against [RFC 8461, 2](https://www.rfc-editor.org/rfc/rfc8461#section-2).
+
+* Daemon lacks some minor features:
+
+  * Fetch error reporting.
+  * Fetch ratelimit (but actual fetch rate partially restricted with `cache_grace` config option).
 
 Server has configurable cache backend which allows to store cached STS policies in memory (`internal`), file (`sqlite`) or in Redis database (`redis`).
 
@@ -184,6 +190,40 @@ smtp_tls_policy_maps = socketmap:inet:127.0.0.1:8461:postfix
 If your configuration already has some TLS policy maps, just add MTA-STS socketmap to list of configured maps accordingly to [`smtp_tls_policy_maps`](http://www.postfix.org/postconf.5.html#smtp_tls_policy_maps) syntax. TLS policy tables are searched in the specified order until a match is found, so you may have table with local overrides of TLS policy prior to MTA-STS socketmap. This may be useful for skipping network lookup for well-known destinations or relaxing security for broken destinations, announcing MTA-STS support.
 
 Reload Postfix after reconfiguration.
+
+
+### Warning: MTA-STS policy overrides DANE TLS authentication
+
+Due to Postfix's limitations, a resolved MTA-STS policy overrides DANE TLS authentication ([RFC 6698](https://www.rfc-editor.org/rfc/rfc6698)), because DANE is an internal feature of Postfix, and the postfix-mta-sts-resolver always responds with a ([`smtp_tls_policy_maps`](https://www.postfix.org/postconf.5.html#smtp_tls_policy_maps)) lookup result `secure` for [Secure server certificate verification](https://www.postfix.org/TLS_README.html#client_tls_secure).
+
+  * The resulting behaviour is against [RFC 8461, 2](https://www.rfc-editor.org/rfc/rfc8461#section-2):
+    > However, MTA-STS is designed not to interfere with DANE deployments when the two overlap; in particular, senders who implement MTA-STS validation MUST NOT allow MTA-STS Policy validation to override a failing DANE validation.
+    
+    Domains implementing both MTA-STS and DANE probably want DANE to be preferred:
+    
+      * DANE allows strict binding of certificates; the policy can authorize only a certain certificate or certificates from a certain CA. With MTA-STS, a certificate from any trusted CA is automatically trusted; [RFC 8461, 10.1](https://www.rfc-editor.org/rfc/rfc8461#section-10.1):
+
+        > SMTP MTA-STS relies on certificate validation via PKIX-based TLS identity checking [RFC6125].  Attackers who are able to obtain a
+   valid certificate for the targeted recipient mail service (e.g., by compromising a CA) are thus able to circumvent STS authentication.
+      
+      * Based on DNSSEC, DANE not vulnerable to downgrade attack that could prevent policy discovery. MTA-STS security considerations acknowledges this weakness in [RFC 8461, 10.2](https://www.rfc-editor.org/rfc/rfc8461#section-10.2):
+
+        > Since MTA-STS uses DNS TXT records for policy discovery, an attacker who is able to block DNS responses can suppress the discovery of an
+   MTA-STS Policy, making the Policy Domain appear not to have an MTA-STS Policy. 
+
+        > Resistance to downgrade attacks of this nature -- due to the ability to authoritatively determine "lack of a record" even for non-participating recipients -- is a feature of DANE, due to its use of DNSSEC for policy discovery.
+
+  * The postfix-mta-sts-resolver does not intent to implement policy lookups for DANE, and responses other than `secure` with `match=` would not verify the TLS certificate as required by [RFC 8461, 4,2](https://www.rfc-editor.org/rfc/rfc8461#section-4.2).
+
+If you wish to meet this requirement:
+
+  * List a DANE policy resolver responding with `dane-only` (for [Mandatory DANE](https://www.postfix.org/TLS_README.html#client_tls_dane)) before postfix-mta-sts-resolver in `smtp_tls_policy_maps` lookup table list.
+  
+  * Alternatively, you could use a static lookup table for domains known to implement both MTA-STS & DANE, e.g.,
+
+    ```
+    smtp_tls_policy_maps = hash:/etc/postfix/tls_policy,socketmap:inet:127.0.0.1:8461:postfix
+    ```
 
 
 ## Operability check

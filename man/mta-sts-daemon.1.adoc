@@ -50,6 +50,11 @@ Reload Postfix.  Then verify it works:
 
 */usr/sbin/postmap -q dismail.de socketmap:inet:127.0.0.1:8461:postfix*
 
+This configuration overrides DANE TLS authentication. If you wish to meet the
+requirement of RFC 8461, section 2, you should list a DANE policy resolver (or 
+a static lookup table for domains known to implement both MTA-STS & DANE) before
+mta-sts-daemon in smtp_tls_policy_maps.
+
 == See also
 
 *mta-sts-query*(1), *mta-sts-daemon.yml*(5)
