@@ -16,19 +16,6 @@ Current support of [RFC 8461](https://www.rfc-editor.org/rfc/rfc8461) is limited
 
 Server has configurable cache backend which allows to store cached STS policies in memory (`internal`), file (`sqlite`) or in Redis database (`redis`).
 
----
-
-:heart: :heart: :heart:
-
-You can say thanks to the author by donations to these wallets:
-
-- ETH: `0xB71250010e8beC90C5f9ddF408251eBA9dD7320e`
-- BTC:
-  - Legacy: `1N89PRvG1CSsUk9sxKwBwudN6TjTPQ1N8a`
-  - Segwit: `bc1qc0hcyxc000qf0ketv4r44ld7dlgmmu73rtlntw`
-
----
-
 ## Requirements
 
 * Postfix 3.4+ (or Postfix 2.10+ if missing Postfix SNI feature is tolerable. In that case you have to set zone option `require_sni` to `false` in MTA-STS daemon config)
