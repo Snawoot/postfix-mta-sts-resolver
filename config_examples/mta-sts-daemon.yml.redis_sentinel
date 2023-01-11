@@ -1,0 +1,20 @@
+host: 127.0.0.1
+port: 8461
+reuse_port: true
+shutdown_timeout: 20
+cache:
+  type: redis_sentinel
+  options:
+    sentinels: [("sentinel.host1", 26379), ("sentinel.host2", 26379)]
+    db: 0
+    password: ""
+    max_connections: 25
+    socket_timeout: 1.0
+    socket_connect_timeout: 1.0
+default_zone:
+  strict_testing: false
+  timeout: 4
+zones:
+  myzone:
+    strict_testing: false
+    timeout: 4

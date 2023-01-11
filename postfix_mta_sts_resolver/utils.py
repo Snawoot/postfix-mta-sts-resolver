@@ -227,6 +227,10 @@ def create_cache(cache_type, options):
         # pylint: disable=import-outside-toplevel
         from . import redis_cache
         cache = redis_cache.RedisCache(**options)
+    elif cache_type == "redis_sentinel":
+        # pylint: disable=import-outside-toplevel
+        from . import redis_cache
+        cache = redis_cache.RedisSentinelCache(**options)
     else:
         raise NotImplementedError("Unsupported cache type!")
     return cache
