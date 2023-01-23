@@ -91,17 +91,19 @@ class RedisCache(BaseCache):
 class RedisSentinelCache(BaseCache):
     def __init__(self, **opts):
         self._opts = dict(opts)
-        self._opts['socket_timeout'] = self._opts.get('socket_timeout',
-            defaults.REDIS_TIMEOUT)
+        self._opts['socket_timeout'] = self._opts.get(
+            'socket_timeout',defaults.REDIS_TIMEOUT
+        )
         self._opts['socket_connect_timeout'] = self._opts.get(
-            'socket_connect_timeout', defaults.REDIS_CONNECT_TIMEOUT)
+            'socket_connect_timeout', defaults.REDIS_CONNECT_TIMEOUT
+        )
         self._opts['encoding'] = 'utf-8'
         self._pool = None
 
     async def setup(self):
         sentinel = aioredis.sentinel.Sentinel(self._opts['sentinels'])
         opts = dict((k,v) for k, v in self._opts.items() if k != 'sentinels')
-        self_pool = sentinel.master_for("mymaster", opts**)
+        self_pool = sentinel.master_for(self._opts['sentinel_master_name'], **opts)
 
     async def get(self, key):
         assert self._pool is not None
