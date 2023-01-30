@@ -10,7 +10,7 @@ cache:
       - ["sentinel1", 26379]
       - ["sentinel2", 26379]
       - ["sentinel3", 26379]
-    db: 0
+    password: "StrongPassword"
     max_connections: 25
     socket_timeout: 1.0
     socket_connect_timeout: 1.0
