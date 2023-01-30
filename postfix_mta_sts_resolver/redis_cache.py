@@ -102,8 +102,11 @@ class RedisSentinelCache(BaseCache):
 
     async def setup(self):
         sentinel = aioredis.sentinel.Sentinel(self._opts['sentinels'])
-        opts = dict((k,v) for k, v in self._opts.items() if k != 'sentinels')
-        self_pool = sentinel.master_for(self._opts['sentinel_master_name'], **opts)
+        sentinel_master_name = self._opts['sentinel_master_name']
+        for key in ['sentinels', 'sentinel_master_name']:
+          self._opts.pop(key)
+        opts = dict((k,v) for k, v in self._opts.items())
+        self._pool = sentinel.master_for(sentinel_master_name, **opts)
 
     async def get(self, key):
         assert self._pool is not None
