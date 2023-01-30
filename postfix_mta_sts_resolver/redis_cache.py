@@ -104,7 +104,7 @@ class RedisSentinelCache(BaseCache):
         sentinel = aioredis.sentinel.Sentinel(self._opts['sentinels'])
         sentinel_master_name = self._opts['sentinel_master_name']
         for key in ['sentinels', 'sentinel_master_name']:
-          self._opts.pop(key)
+            self._opts.pop(key)
         opts = dict((k,v) for k, v in self._opts.items())
         self._pool = sentinel.master_for(sentinel_master_name, **opts)
 
