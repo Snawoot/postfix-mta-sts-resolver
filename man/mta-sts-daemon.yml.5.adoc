@@ -45,7 +45,7 @@ The file is in YAML syntax with the following elements:
  ** Options for _redis_sentinel_ type:
   *** *sentinel_master_name*: (_str_) name of the sentinel master
   *** *sentinels*: (_list_)(_tuple_) list of sentinels in form of ip/fqdn and port
-  *** All other parameters are passed to `aioredis.sentinel.Sentinel` [1]. Check there for a parameter reference.
+  *** All other parameters are passed to `aioredis.sentinel.Sentinel` [1]. For additional details check [2].
 
 *proactive_policy_fetching*::
 
@@ -104,4 +104,6 @@ domains operate under "testing" mode.
 0.::
   https://aioredis.readthedocs.io/en/latest/api/high-level/#aioredis.client.Redis.from_url
 1.::
-  https://aioredis.readthedocs.io/en/v1.3.0/sentinel.html#aioredis.sentinel.RedisSentinel
+  https://aioredis.readthedocs.io/en/latest/getting-started/#redis-sentinel-client
+2.::
+  https://redis.readthedocs.io/en/stable/connections.html#sentinel-client
