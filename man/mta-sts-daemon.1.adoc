@@ -29,12 +29,21 @@ successful authentication of that site when forwarding mail there.
 *-v, --verbosity* _VERBOSITY_::
   set log verbosity level: _debug_, _info_ (default), _warn_, _error_, or
   _fatal_.
-
 *-c, --config* _FILE_::
   config file location (default: _/etc/mta-sts-daemon.yml_)
 
+*-g, --group* _GROUP_::
+  change eGID to this group (default: _none_)
+
 *-l, --logfile* _FILE_::
   log file location (default: _none_)
+
+*-p, --pidfile* _PIDFILE_::
+  name of the file to write the current pid to (default: _none_)
+
+*-u, --user* _USER_::
+  change eUID to this user (default: _none_)
+
 
 *--disable-uvloop*::
   do not use uvloop even if it is available (default: enabled if available)

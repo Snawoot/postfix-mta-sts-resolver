@@ -3,8 +3,11 @@
 import os
 import argparse
 import asyncio
+import grp
 import logging
+import pwd
 import signal
+import sys
 from functools import partial
 
 from .asdnotify import AsyncSystemdNotifier
@@ -26,12 +29,18 @@ def parse_args():
                         help="config file location",
                         metavar="FILE",
                         default=defaults.CONFIG_LOCATION)
+    parser.add_argument("-g", "--group",
+                        help="change eGID to this group")
     parser.add_argument("-l", "--logfile",
                         help="log file location",
                         metavar="FILE")
     parser.add_argument("--disable-uvloop",
                         help="do not use uvloop even if it is available",
                         action="store_true")
+    parser.add_argument("-p", "--pidfile",
+                        help="name of the file to write the current pid to")
+    parser.add_argument("-u", "--user",
+                        help="change eUID to this user")
 
     return parser.parse_args()
 
@@ -96,8 +105,24 @@ async def amain(cfg, loop):  # pragma: no cover
 
 
 def main():  # pragma: no cover
-    # Parse command line arguments and setup basic logging
     args = parse_args()
+    if args.pidfile is not None:
+        with open(args.pidfile, 'w') as f:
+            f.write(str(os.getpid()))
+    if args.group is not None:
+        try:
+            g = grp.getgrnam(args.group)
+            os.setegid(g.gr_gid)
+        except Exception as e:
+            print("Unable to change eGID to '{}': {}".format(args.group, e), file=sys.stderr)
+            return os.EX_OSERR
+    if args.user is not None:
+        try:
+            p = pwd.getpwnam(args.user)
+            os.seteuid(p.pw_uid)
+        except Exception as e:
+            print("Unable to change eUID to '{}': {}".format(args.user, e), file=sys.stderr)
+            return os.EX_OSERR
     with utils.AsyncLoggingHandler(args.logfile) as log_handler:
         logger = utils.setup_logger('MAIN', args.verbosity, log_handler)
         utils.setup_logger('STS', args.verbosity, log_handler)
