@@ -1,0 +1,78 @@
+#!/bin/sh
+#
+# Originally written by Jan Schaumann <jschauma@netmeister.org> in March 2023.
+
+# PROVIDE: mta_sts_daemon
+# REQUIRE: LOGIN
+
+if [ -f /etc/rc.subr ]; then
+	. /etc/rc.subr
+fi
+
+name="mta_sts_daemon"
+rcvar=$name
+config_file="/etc/${name}.yml"
+pidfile="/var/run/${name}.pid"
+log_file="/var/log/mta-sts.log"
+log_verbosity="info"
+required_files="${config_file}"
+
+mta_sts_pid=""
+command_interpreter="/usr/pkg/bin/python3.9"
+start_precmd="mta_sts_precmd"
+start_cmd="mta_sts_start"
+stop_cmd="mta_sts_stop"
+status_cmd="mta_sts_status"
+mta_sts_pid=`check_pidfile ${pidfile} ${command_interpreter}`
+mta_sts_user="mta-sts"
+mta_sts_group="mta-sts"
+
+command="/usr/pkg/bin/mta-sts-daemon"
+command_args="-c ${config_file} -g ${mta_sts_group} -u ${mta_sts_user} -l ${log_file} -p ${pidfile} -v ${log_verbosity}"
+
+mta_sts_precmd()
+{
+	if [ ! -f ${log_file} ]; then
+		touch ${log_file}
+		chown ${mta_sts_user} ${log_file}
+	fi
+}
+
+mta_sts_start()
+{
+	if [ -n "${mta_sts_pid}" ]; then
+		echo "${command} already running as pid ${mta_sts_pid}."
+		return 1
+	fi
+	echo "Starting ${name}"
+	${command} ${command_args} &
+}
+
+mta_sts_stop()
+{
+	if [ -z "${mta_sts_pid}" ]; then
+		echo "${command} not running? (check ${pidfile})."
+		return 1
+	fi
+	echo "Stopping ${name}"
+	kill -TERM ${mta_sts_pid} && rm -f ${pidfile}
+}
+
+mta_sts_status()
+{
+	if [ -z "${mta_sts_pid}" ]; then
+		echo "${command} is not running? (check ${pidfile})."
+	else
+		echo "${command} is running as pid ${mta_sts_pid}."
+		
+	fi
+	
+}
+
+if [ -f /etc/rc.subr ]; then
+        load_rc_config $name
+	run_rc_command "$1"
+else
+	echo -n " ${name}"
+	${command} ${opendkim_flags} ${command_args}
+fi
