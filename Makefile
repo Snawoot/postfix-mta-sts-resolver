@@ -9,7 +9,7 @@ VENV ?= $(PRJ_DIR)venv
 PKGVENV ?= $(PRJ_DIR)pkg_venv
 
 install: $(VENV) setup.py
-	$(VENV)/bin/python -m pip install -U .[sqlite,redis,dev]
+	$(VENV)/bin/python -m pip install -U .[sqlite,redis,postgres,dev]
 
 $(VENV):
 	$(PYTHON) -m venv $(VENV)
