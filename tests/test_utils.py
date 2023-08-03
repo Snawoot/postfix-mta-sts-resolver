@@ -27,7 +27,7 @@ def test_populate_cfg_defaults(cfg):
     assert isinstance(res['proactive_policy_fetching']['concurrency_limit'], int)
     assert isinstance(res['proactive_policy_fetching']['grace_ratio'], (int, float))
     assert isinstance(res['cache'], collections.abc.Mapping)
-    assert res['cache']['type'] in ('redis', 'sqlite', 'internal')
+    assert res['cache']['type'] in ('redis', 'sqlite', 'postgres', 'internal')
     assert isinstance(res['default_zone'], collections.abc.Mapping)
     assert isinstance(res['zones'], collections.abc.Mapping)
     for zone in list(res['zones'].values()) + [res['default_zone']]:

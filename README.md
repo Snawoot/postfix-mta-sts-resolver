@@ -37,7 +37,7 @@ All dependency packages installed automatically if this package is installed via
 Run:
 
 ```bash
-sudo python3 -m pip install postfix-mta-sts-resolver[redis,sqlite]
+sudo python3 -m pip install postfix-mta-sts-resolver[redis,sqlite,postgres]
 ```
 
 If you don't need `redis` or `sqlite` support, you may omit one of them in square brackets. If you don't need any of them and you plan to use internal cache without persistence, you should also omit square brackets.
@@ -53,10 +53,10 @@ All pip invocations can be run with `--user` option of `pip` installer. In this 
 Run in project directory:
 
 ```bash
-sudo python3 -m pip install .[redis,sqlite]
+sudo python3 -m pip install .[redis,sqlite,postgres]
 ```
 
-If you don't need `redis` or `sqlite` support, you may omit one of them in square brackets. If you don't need any of them and you plan to use internal cache without persistence, you should also omit square brackets.
+If you don't need `redis`, `sqlite` or `postgres` support, you may omit one of them in square brackets. If you don't need any of them and you plan to use internal cache without persistence, you should also omit square brackets.
 
 Package scripts shall be available in standard executable locations upon completion.
 

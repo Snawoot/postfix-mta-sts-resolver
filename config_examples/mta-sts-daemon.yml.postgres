@@ -1,0 +1,15 @@
+host: 127.0.0.1
+port: 8461
+reuse_port: true
+shutdown_timeout: 20
+cache:
+  type: postgres
+  options:
+    dsn: postgres://user@%2Frun%2Fpostgresql/user
+default_zone:
+  strict_testing: false
+  timeout: 4
+zones:
+  myzone:
+    strict_testing: false
+    timeout: 4

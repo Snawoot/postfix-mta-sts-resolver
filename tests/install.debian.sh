@@ -7,7 +7,7 @@ PYTHON="${PYTHON:-python3}"
 # run under travis, but not under autopkgtest
 if [ -z "${AUTOPKGTEST_TMP+x}" ] ; then
     apt-get update
-    apt-get install -y redis-server dnsmasq lsof nginx-extras tinyproxy \
+    apt-get install -y redis-server postgresql dnsmasq lsof nginx-extras tinyproxy \
 		build-essential libssl-dev libffi-dev python3-dev cargo
     systemctl start redis-server || { journalctl -xe ; false ; }
     "$PYTHON" -m pip install cryptography
@@ -17,7 +17,7 @@ fi
 install -m 644 tests/resolv.conf /etc/resolv-dnsmasq.conf
 cat tests/dnsmasq.conf.appendix >> /etc/dnsmasq.conf
 echo 'nameserver 127.0.0.1' > /etc/resolv.conf
-systemctl restart dnsmasq || { journalctl -xe ; false ; }
+systemctl restart dnsmasq postgresql || { journalctl -xe ; false ; }
 
 
 # certificates for the test cases
