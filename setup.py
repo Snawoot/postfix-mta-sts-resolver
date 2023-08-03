@@ -27,6 +27,7 @@ setup(name='postfix_mta_sts_resolver',
       extras_require={
           'sqlite': 'aiosqlite>=0.10.0',
           'redis': 'redis>=4.2.0rc1',
+          'postgres': 'asyncpg>=0.27',
           'dev': [
               'pytest>=3.0.0',
               'pytest-cov',

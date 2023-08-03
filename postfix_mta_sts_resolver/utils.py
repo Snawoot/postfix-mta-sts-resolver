@@ -231,6 +231,10 @@ def create_cache(cache_type, options):
         # pylint: disable=import-outside-toplevel
         from . import redis_cache
         cache = redis_cache.RedisSentinelCache(**options)
+    elif cache_type == "postgres":
+        # pylint: disable=import-outside-toplevel
+        from . import postgres_cache
+        cache = postgres_cache.PostgresCache(**options)
     else:
         raise NotImplementedError("Unsupported cache type!")
     return cache

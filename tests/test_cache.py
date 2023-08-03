@@ -14,6 +14,10 @@ async def setup_cache(cache_type, cache_opts):
     await cache.setup()
     if cache_type == 'redis':
         await cache._pool.flushdb()
+    if cache_type == 'postgres':
+        async with cache._pool.acquire() as conn:
+            await conn.execute('TRUNCATE sts_policy_cache')
+            await conn.execute('TRUNCATE proactive_fetch_ts')
     return cache, tmpfile
 
 @pytest.mark.parametrize("cache_type,cache_opts,safe_set", [
@@ -23,6 +27,8 @@ async def setup_cache(cache_type, cache_opts):
     ("sqlite", {}, False),
     ("redis", {"url": "redis://127.0.0.1/0?socket_timeout=5&socket_connect_timeout=5"}, True),
     ("redis", {"url": "redis://127.0.0.1/0?socket_timeout=5&socket_connect_timeout=5"}, False)
+    ("postgres", {"dsn": "postgres://postgres@%2Frun%2Fpostgresql/postgres"}, True),
+    ("postgres", {"dsn": "postgres://postgres@%2Frun%2Fpostgresql/postgres"}, False),
 ])
 @pytest.mark.asyncio
 async def test_cache_lifecycle(cache_type, cache_opts, safe_set):
@@ -47,6 +53,8 @@ async def test_cache_lifecycle(cache_type, cache_opts, safe_set):
     ("internal", {}),
     ("sqlite", {}),
     ("redis", {"url": "redis://127.0.0.1/0?socket_timeout=5&socket_connect_timeout=5"}),
+    ("postgres", {"dsn": "postgres://postgres@%2Frun%2Fpostgresql/postgres"}),
+    ("postgres", {"dsn": "postgres://postgres@%2Frun%2Fpostgresql/postgres"}),
 ])
 @pytest.mark.asyncio
 async def test_proactive_fetch_ts_lifecycle(cache_type, cache_opts):
@@ -84,6 +92,12 @@ async def test_proactive_fetch_ts_lifecycle(cache_type, cache_opts):
     ("redis", {"url": "redis://127.0.0.1/0?socket_timeout=5&socket_connect_timeout=5"}, 3, 4),
     ("redis", {"url": "redis://127.0.0.1/0?socket_timeout=5&socket_connect_timeout=5"}, 0, 4),
     ("redis", {"url": "redis://127.0.0.1/0?socket_timeout=5&socket_connect_timeout=5"}, constants.DOMAIN_QUEUE_LIMIT*2, constants.DOMAIN_QUEUE_LIMIT),
+    ("postgres", {"dsn": "postgres://postgres@%2Frun%2Fpostgresql/postgres"}, 3, 1),
+    ("postgres", {"dsn": "postgres://postgres@%2Frun%2Fpostgresql/postgres"}, 3, 2),
+    ("postgres", {"dsn": "postgres://postgres@%2Frun%2Fpostgresql/postgres"}, 3, 3),
+    ("postgres", {"dsn": "postgres://postgres@%2Frun%2Fpostgresql/postgres"}, 3, 4),
+    ("postgres", {"dsn": "postgres://postgres@%2Frun%2Fpostgresql/postgres"}, 0, 4),
+    ("postgres", {"dsn": "postgres://postgres@%2Frun%2Fpostgresql/postgres"}, constants.DOMAIN_QUEUE_LIMIT*2, constants.DOMAIN_QUEUE_LIMIT),
 ])
 @pytest.mark.timeout(10)
 @pytest.mark.asyncio
