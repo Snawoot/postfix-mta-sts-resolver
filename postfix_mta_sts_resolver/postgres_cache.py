@@ -1,9 +1,9 @@
 # pylint: disable=invalid-name,protected-access
 
-import asyncio
-import asyncpg
 import json
 import logging
+
+import asyncpg
 
 from .defaults import POSTGRES_TIMEOUT
 from .base_cache import BaseCache, CacheEntry
