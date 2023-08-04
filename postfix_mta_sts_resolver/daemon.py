@@ -107,21 +107,21 @@ async def amain(cfg, loop):  # pragma: no cover
 def main():  # pragma: no cover
     args = parse_args()
     if args.pidfile is not None:
-        with open(args.pidfile, 'w') as f:
-            f.write(str(os.getpid()))
+        with open(args.pidfile, 'w', encoding='ascii') as pid_file:
+            pid_file.write(str(os.getpid()))
     if args.group is not None:
         try:
-            g = grp.getgrnam(args.group)
-            os.setegid(g.gr_gid)
-        except Exception as e:
-            print("Unable to change eGID to '{}': {}".format(args.group, e), file=sys.stderr)
+            group = grp.getgrnam(args.group)
+            os.setegid(group.gr_gid)
+        except Exception as exc:
+            print("Unable to change eGID to '{}': {}".format(args.group, exc), file=sys.stderr)
             return os.EX_OSERR
     if args.user is not None:
         try:
-            p = pwd.getpwnam(args.user)
-            os.seteuid(p.pw_uid)
-        except Exception as e:
-            print("Unable to change eUID to '{}': {}".format(args.user, e), file=sys.stderr)
+            passwd = pwd.getpwnam(args.user)
+            os.seteuid(passwd.pw_uid)
+        except Exception as exc:
+            print("Unable to change eUID to '{}': {}".format(args.user, exc), file=sys.stderr)
             return os.EX_OSERR
     with utils.AsyncLoggingHandler(args.logfile) as log_handler:
         logger = utils.setup_logger('MAIN', args.verbosity, log_handler)
@@ -148,3 +148,4 @@ def main():  # pragma: no cover
         evloop.run_until_complete(amain(cfg, evloop))
         evloop.close()
         logger.info("Server finished its work.")
+    return os.EX_OK
