@@ -27,8 +27,8 @@ async def setup_cache(cache_type, cache_opts):
     ("sqlite", {}, False),
     ("redis", {"url": "redis://127.0.0.1/0?socket_timeout=5&socket_connect_timeout=5"}, True),
     ("redis", {"url": "redis://127.0.0.1/0?socket_timeout=5&socket_connect_timeout=5"}, False),
-    ("postgres", {"dsn": "postgres://postgres@%2Frun%2Fpostgresql/postgres"}, True),
-    ("postgres", {"dsn": "postgres://postgres@%2Frun%2Fpostgresql/postgres"}, False),
+    ("postgres", {"dsn": "postgres://postgres@localhost:5432"}, True),
+    ("postgres", {"dsn": "postgres://postgres@localhost:5432"}, False),
 ])
 @pytest.mark.asyncio
 async def test_cache_lifecycle(cache_type, cache_opts, safe_set):

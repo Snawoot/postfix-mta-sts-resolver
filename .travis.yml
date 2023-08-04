@@ -1,6 +1,13 @@
 language: python
 dist: bionic
 
+addons:
+  postgresql: "10"
+  apt:
+    packages:
+    - postgresql-10
+    - postgresql-client-10
+
 matrix:
   include:
     - python: 3.9
