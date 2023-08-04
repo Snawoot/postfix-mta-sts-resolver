@@ -90,7 +90,7 @@ class PostgresCache(BaseCache):
 
         async with self._pool.acquire(timeout=self._timeout) as conn, conn.transaction():
             res = await conn.fetch('SELECT id, ts, pol_id, pol_body, domain FROM '
-                                    'sts_policy_cache WHERE id >= $1 LIMIT $2',
+                                    'sts_policy_cache WHERE id >= $1 ORDER BY id ASC LIMIT $2',
                                     token, amount_hint)
         if res:
             result = []
