@@ -275,4 +275,4 @@ Second option - specify new path in shebang of scripts installed in virtualenv. 
 
 ## Credits
 
-Inspired by [this forum thread](http://postfix.1071664.n5.nabble.com/MTA-STS-when-td95086.html).
+Inspired by [a postfix-user mailing list thread](https://marc.info/?l=postfix-users&m=151889071727364&w=2) (subject: 'MTA-STS when?', first message: 2018-02-17).
