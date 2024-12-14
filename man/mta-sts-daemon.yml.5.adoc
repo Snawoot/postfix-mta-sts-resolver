@@ -32,7 +32,7 @@ The file is in YAML syntax with the following elements:
 
 *cache*::
 
-* *type*: (_str_: _internal_|_sqlite_|_redis_|_redis_sentinel_) cache backend type. Default: internal
+* *type*: (_str_: _internal_|_sqlite_|_redis_|_redis_sentinel_|postgres) cache backend type. Default: internal
 * *options*:
  ** Options for _internal_ type:
   *** *cache_size*: (_int_) number of cache entries to store in memory. Default: 10000
@@ -46,6 +46,8 @@ The file is in YAML syntax with the following elements:
   *** *sentinel_master_name*: (_str_) name of the sentinel master
   *** *sentinels*: (_list_)(_tuple_) list of sentinels in form of ip/fqdn and port
   *** All other parameters are passed to `aioredis.sentinel.Sentinel` [1]. For additional details check [2].
+ ** Options for _postgres_ type:
+  *** *dsn*: (_str_) database connection string
 
 *proactive_policy_fetching*::
 
