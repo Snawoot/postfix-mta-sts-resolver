@@ -33,6 +33,7 @@ class STSSocketmapResponder:
             self._port = cfg['port']
         self._reuse_port = cfg['reuse_port']
         self._shutdown_timeout = cfg['shutdown_timeout']
+        self._tlsrpt = cfg['tlsrpt']
         self._grace = cfg['cache_grace']
 
         # Construct configurations and resolvers for every socketmap name
@@ -225,6 +226,8 @@ class STSSocketmapResponder:
                 resp = "OK secure match=" + ":".join(mxlist)
                 if zone_cfg.require_sni:
                     resp += " servername=hostname"
+                if self._tlsrpt:
+                    resp += " policy_type=sts policy_domain=" + domain
                 return netstring.encode(resp.encode('utf-8'))
         else:
             return netstring.encode(b'NOTFOUND ')

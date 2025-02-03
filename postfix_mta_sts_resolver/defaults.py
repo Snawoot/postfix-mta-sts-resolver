@@ -4,6 +4,7 @@ HOST = "127.0.0.1"
 PORT = 8461
 REUSE_PORT = True
 TIMEOUT = 4
+TLSRPT = False
 SHUTDOWN_TIMEOUT = 20
 STRICT_TESTING = False
 CONFIG_LOCATION = "/etc/mta-sts-daemon.yml"
