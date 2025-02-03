@@ -30,6 +30,8 @@ The file is in YAML syntax with the following elements:
 
 *shutdown_timeout*: (_float_) time limit granted to existing client sessions for finishing when server stops. Default: 20
 
+*tlsrpt*: (_bool_) include response attributes for TLSRPT support (Postfix 3.10 and later). Default: false
+
 *cache*::
 
 * *type*: (_str_: _internal_|_sqlite_|_redis_|_redis_sentinel_|postgres) cache backend type. Default: internal
