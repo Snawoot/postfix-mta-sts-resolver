@@ -230,6 +230,10 @@ class STSSocketmapResponder:
                 if zone_cfg.tlsrpt:
                     resp += " policy_type=sts policy_domain=" + domain
                     resp += " " + " ".join("mx_host_pattern=" + mx for mx in cached.pol_body['mx'])
+                    resp += " " + " ".join(
+                            "{ policy_string = %s: %s }" % (k, v) if k != "mx" else
+                            " ".join("{ policy_string = mx: %s }" % (mx,) for mx in v)
+                            for k, v in cached.pol_body.items())
                 return netstring.encode(resp.encode('utf-8'))
         else:
             return netstring.encode(b'NOTFOUND ')
