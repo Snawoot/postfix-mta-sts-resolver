@@ -30,8 +30,6 @@ The file is in YAML syntax with the following elements:
 
 *shutdown_timeout*: (_float_) time limit granted to existing client sessions for finishing when server stops. Default: 20
 
-*tlsrpt*: (_bool_) include response attributes for TLSRPT support (Postfix 3.10 and later). Default: false
-
 *cache*::
 
 * *type*: (_str_: _internal_|_sqlite_|_redis_|_redis_sentinel_|postgres) cache backend type. Default: internal
@@ -64,6 +62,7 @@ It is unaffected by `cache_grace` and vice versa. Default: 86400
 * *strict_testing*: (_bool_) enforce policy for testing domains. Default: false
 * *timeout*: (_int_) network operations timeout for resolver in that zone. Default: 4
 * *require_sni*: (_bool_) add option `servername=hostname` to policy responses to make Postfix send SNI in TLS handshake as required by RFC 8461. Requires Postfix version 3.4+. Default: true
+* *tlsrpt*: (_bool_) include response attributes for TLSRPT support (Postfix 3.10 and later). Default: false
 
 *zones*::
 
