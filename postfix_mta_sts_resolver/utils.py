@@ -87,7 +87,6 @@ def populate_cfg_defaults(cfg):
     cfg['reuse_port'] = cfg.get('reuse_port', defaults.REUSE_PORT)
     cfg['shutdown_timeout'] = cfg.get('shutdown_timeout',
                                       defaults.SHUTDOWN_TIMEOUT)
-    cfg['tlsrpt'] = cfg.get('tlsrpt', defaults.TLSRPT)
     cfg['cache_grace'] = cfg.get('cache_grace', defaults.CACHE_GRACE)
 
     if 'proactive_policy_fetching' not in cfg:
@@ -117,6 +116,7 @@ def populate_cfg_defaults(cfg):
         zone['timeout'] = zone.get('timeout', defaults.TIMEOUT)
         zone['strict_testing'] = zone.get('strict_testing', defaults.STRICT_TESTING)
         zone['require_sni'] = zone.get('require_sni', defaults.REQUIRE_SNI)
+        zone['tlsrpt'] = zone.get('tlsrpt', defaults.TLSRPT)
         return zone
 
     if 'default_zone' not in cfg:

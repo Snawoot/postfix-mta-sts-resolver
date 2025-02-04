@@ -1,7 +1,6 @@
 path: "/var/run/mta-sts.sock"
 mode: 0666
 shutdown_timeout: 20
-# tlsrpt: true
 cache:
   type: sqlite
   options:
@@ -9,6 +8,7 @@ cache:
 default_zone:
   strict_testing: false
   timeout: 4
+  #tlsrpt: true
 zones:
   myzone:
     strict_testing: false
