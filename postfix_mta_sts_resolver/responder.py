@@ -229,6 +229,7 @@ class STSSocketmapResponder:
                     resp += " servername=hostname"
                 if zone_cfg.tlsrpt:
                     resp += " policy_type=sts policy_domain=" + domain
+                    resp += " " + " ".join("mx_host_pattern=" + mx for mx in cached.pol_body['mx'])
                 return netstring.encode(resp.encode('utf-8'))
         else:
             return netstring.encode(b'NOTFOUND ')
